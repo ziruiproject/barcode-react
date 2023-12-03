@@ -12,6 +12,7 @@ export default function Login() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             console.log('Login successful!');
+            window.location.replace('/');
         } catch (error) {
             console.error('Error logging in:', error.message);
         }
@@ -21,6 +22,7 @@ export default function Login() {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
             console.log('Regis successful!');
+            window.location.replace('/');
             // Redirect to / after successful registration
         } catch (error) {
             console.error('Error regis in:', error.message);
