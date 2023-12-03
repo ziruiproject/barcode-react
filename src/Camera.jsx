@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase";
-import { firestore } from "../firebase";
+import { auth } from "./firebase";
+import { firestore } from "./firebase";
 import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 
 export default function Camera() {
