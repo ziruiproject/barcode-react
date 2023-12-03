@@ -1,42 +1,20 @@
-// Scanner.js
-import React, { useState } from "react";
-import { useZxing } from "react-zxing";
-import { firestore } from "../firebase";
+// App.js
+import React from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './Login';
+import Camera from './Camera';
 
-const Scanner = ({ user, handleLogout }) => {
-  const [result, setResult] = useState("");
-  const { ref } = useZxing({
-    onDecodeResult(result) {
-      setResult(result.getText());
-      if (user) {
-        console.log(user.uid)
-        const result = firestore.collection("history").add({
-          userId: user.uid,
-          result: result.getText(),
-          timestamp: new Date(),
-        });
-
-        result
-          .then((docRef) => {
-            console.log("Document written with ID: ", docRef.id);
-          })
-          .catch((error) => {
-            console.error("Error adding document: ", error);
-          });
-      }
-    },
-  });
-
+const App = () => {
   return (
-    <div>
-      <video ref={ref} />
-      <p>
-        <span>Result: </span>
-        <span>{result}</span>
-      </p>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/">
+          <Route path="login" Component={Login} />
+          <Route path="" Component={Camera} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 
-export default Scanner;
+export default App;
