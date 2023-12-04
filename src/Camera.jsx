@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import { auth } from "./firebase";
 import { firestore } from "./firebase";
-import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 export default function Camera() {
     const [result, setResult] = useState("");
