@@ -30,18 +30,18 @@ export default function Login() {
     };
 
     return (
-        <div class="flex flex-col items-center justify-center w-screen h-screen bg-gray-200 text-gray-700">
-            <h1 class="font-bold text-2xl">Selamat Datang! :)</h1>
-            <form class="flex flex-col bg-white rounded shadow-lg p-12 mt-12" action="">
-                <label class="font-semibold text-xs" for="usernameField">Email</label>
-                <input placeholder='' class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2" type="text" />
-                <label class="font-semibold text-xs mt-3" for="passwordField">Password</label>
-                <input class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2" type="password" />
-                <button class="flex items-center justify-center h-12 px-6 w-64 bg-blue-600 mt-8 rounded font-semibold text-sm text-blue-100 hover:bg-blue-700">Masuk</button>
-                {/* <div class="flex mt-6 justify-center text-xs">
-                    <a class="text-blue-400 hover:text-blue-500" href="#">Lupa Password</a>
-                    <span class="mx-2 text-gray-300">/</span>
-                    <a class="text-blue-400 hover:text-blue-500" href="#">Daftar</a>
+        <div className="flex flex-col items-center justify-center w-screen h-screen text-gray-700 bg-gray-200">
+            <h1 className="text-2xl font-bold">Selamat Datang!</h1>
+            <form className="flex flex-col p-12 mt-12 bg-white rounded shadow-lg" action="">
+                <label className="text-xs font-semibold">Email</label>
+                <input placeholder='' className="focus:outline-none focus:ring-2 flex items-center w-64 h-12 px-4 mt-2 bg-gray-200 rounded" type="text" />
+                <label className="mt-3 text-xs font-semibold">Password</label>
+                <input className="focus:outline-none focus:ring-2 flex items-center w-64 h-12 px-4 mt-2 bg-gray-200 rounded" type="password" />
+                <button onClick={handleRegis} className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">Masuk</button>
+                {/* <div className="flex justify-center mt-6 text-xs">
+                    <a className="hover:text-blue-500 text-blue-400" href="#">Lupa Password</a>
+                    <span className="mx-2 text-gray-300">/</span>
+                    <a className="hover:text-blue-500 text-blue-400" href="#">Daftar</a>
                 </div> */}
             </form>
         </div>
