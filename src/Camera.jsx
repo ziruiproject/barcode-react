@@ -33,6 +33,16 @@ export default function Camera() {
         },
     });
 
+    const Logout = () => {
+        auth.signOut(auth)
+            .then(() => {
+                console.log('Signed out successfully');
+            })
+            .catch((error) => {
+                console.error('Error signing out:', error.message);
+            });
+    };
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             console.log(user)
@@ -52,6 +62,9 @@ export default function Camera() {
             <p>
                 <span>Hasil: </span>
                 <span>{result}</span>
+                <button onClick={Logout}>
+                    Logout
+                </button>
             </p>
         </>
     );
