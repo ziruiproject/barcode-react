@@ -37,7 +37,7 @@ export default function Login() {
                 <input onChange={(e) => setEmail(e.target.value)} className="focus:outline-none focus:ring-2 flex items-center w-64 h-12 px-4 mt-2 bg-gray-200 rounded" type="text" />
                 <label className="mt-3 text-xs font-semibold">Password</label>
                 <input onChange={(e) => setPassword(e.target.value)} className="focus:outline-none focus:ring-2 flex items-center w-64 h-12 px-4 mt-2 bg-gray-200 rounded" type="password" />
-                <button onClick={handleRegis} type='button' className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">Masuk</button>
+                <button onClick={handleLogin} type='button' className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">Masuk</button>
             </form>
         </div>
     );
