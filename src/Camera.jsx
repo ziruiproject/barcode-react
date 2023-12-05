@@ -6,6 +6,8 @@ import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, on
 
 export default function Camera() {
     const [result, setResult] = useState("");
+
+    // Use Barcode Scanner
     const { ref } = useZxing({
         async onDecodeResult(result) {
             setResult(result.getText());
@@ -43,12 +45,11 @@ export default function Camera() {
             });
     };
 
+    // Check User Auth State
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             console.log(user)
             if (!user) {
-                // Redirect or show login form
-                // Example: Redirect to the login page
                 window.location.replace('/login');
             }
         });
@@ -58,7 +59,7 @@ export default function Camera() {
 
     return (
         <>
-            <video ref={ref} />
+            <video className="aspect-video" ref={ref} />
             <p>
                 <span>Hasil: </span>
                 <span>{result}</span>
