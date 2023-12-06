@@ -4,19 +4,30 @@ import { auth } from "./firebase";
 import { firestore } from "./firebase";
 import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
+import successSound from './success.mp3'
+
 export default function Camera() {
     const [result, setResult] = useState("");
+    const [scanning, setScanning] = useState(false);
 
     // Use Barcode Scanner
     const { ref } = useZxing({
+        readers: [],
         async onDecodeResult(result) {
+            if (scanning) {
+                // If already scanning, ignore the result
+                return;
+            }
+
+            setScanning(true);
             setResult(result.getText());
 
-            // Vibrate when a barcode is successfully scanned
+            // Play a success sound when a barcode is successfully scanned
             try {
-                await navigator.vibrate([200]); // Vibrate for 200 milliseconds
+                const audio = new Audio(successSound);
+                audio.play();
             } catch (error) {
-                console.error('Vibration not supported:', error);
+                console.error('Error playing sound:', error);
             }
 
             const user = auth.currentUser;
@@ -38,6 +49,11 @@ export default function Camera() {
                 .catch((error) => {
                     console.error('Error adding result to Firestore: ', error);
                 });
+
+            // Set a delay before allowing the next scan
+            setTimeout(() => {
+                setScanning(false);
+            }, 2000); // Adjust the delay time (in milliseconds) as needed
         },
     });
 
