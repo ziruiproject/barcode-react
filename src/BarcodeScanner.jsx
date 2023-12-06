@@ -1,37 +1,29 @@
-// BarcodeScanner.js
-import React, { useRef, useEffect } from 'react';
-import { BrowserBarcodeReader } from '@zxing/library';
+// Example of using Instascan in React
+import React, { useEffect } from 'react';
+import Instascan from 'instascan';
 
 const BarcodeScanner = ({ onScan }) => {
-    const videoRef = useRef(null);
-
     useEffect(() => {
-        const codeReader = new BrowserBarcodeReader();
-        let videoStream;
+        const scanner = new Instascan.Scanner({ video: document.getElementById('scanner-video') });
 
-        codeReader
-            .getVideoInputDevices()
-            .then((videoInputDevices) => {
-                if (videoInputDevices.length > 0) {
-                    return codeReader.decodeOnceFromVideoDevice(videoInputDevices[0].deviceId, videoRef.current);
-                }
-            })
-            .then((result) => {
-                onScan(result.text);
-            })
-            .catch((err) => {
-                console.error(err);
-            });
+        scanner.addListener('scan', (content) => {
+            onScan(content);
+        });
+
+        Instascan.Camera.getCameras().then((cameras) => {
+            if (cameras.length > 0) {
+                scanner.start(cameras[0]);
+            } else {
+                console.error('No cameras found.');
+            }
+        });
 
         return () => {
-            codeReader.reset();
-            if (videoStream) {
-                videoStream.getTracks().forEach((track) => track.stop());
-            }
+            scanner.stop();
         };
     }, [onScan]);
 
-    return <video ref={videoRef} playsInline autoPlay style={{ width: '100%', height: '100vh' }} />
+    return <video id="scanner-video" playsInline autoPlay style={{ width: '100%', height: '100vh' }} />;
 };
 
 export default BarcodeScanner;
