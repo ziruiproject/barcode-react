@@ -9,10 +9,11 @@ import successSound from './success.mp3'
 export default function Camera() {
     const [result, setResult] = useState("");
     const [scanning, setScanning] = useState(false);
+    const [torchOn, setTorchOn] = useState(false);
 
     // Use Barcode Scanner
     const { ref } = useZxing({
-        readers: [],
+        readers: [], // Empty array allows ZXing to attempt all supported barcode types
         async onDecodeResult(result) {
             if (scanning) {
                 // If already scanning, ignore the result
@@ -67,6 +68,25 @@ export default function Camera() {
             });
     };
 
+    const toggleTorch = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            const track = stream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities();
+
+            if (capabilities.torch) {
+                await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+                setTorchOn(!torchOn);
+            } else {
+                console.error('Torch is not supported on this device.');
+            }
+
+            stream.getTracks().forEach((track) => track.stop());
+        } catch (error) {
+            console.error('Error toggling torch:', error);
+        }
+    };
+
     // Check User Auth State
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -85,6 +105,9 @@ export default function Camera() {
             <p>
                 <span>Hasil: </span>
                 <span>{result}</span>
+                <button onClick={toggleTorch}>
+                    {torchOn ? 'Turn Off Torch' : 'Turn On Torch'}
+                </button>
                 <button onClick={Logout}>
                     Logout
                 </button>
