@@ -10,14 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@zxing/browser": "^0.1.4",
     "@zxing/library": "^0.20.0",
+    "html5-qrcode": "^2.3.8",
+    "instascan": "^1.0.0",
     "prop-types": "^15.8.1",
+    "quagga": "^0.12.1",
     "react": "^18.2.0",
     "react-barcode": "^1.4.6",
     "react-dom": "^18.2.0",
     "react-qr-reader": "3.0.0-beta-1",
     "react-router-dom": "^6.20.1",
-    "react-zxing": "^2.0.0"
+    "react-zxing": "^2.0.0",
+    "zbar.wasm": "link:/zbar.wasm"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
