@@ -48,6 +48,25 @@ export default function Camera() {
 
             // Check online status
             if (navigator.onLine) {
+                // If online, use serverTimestamp
+                timestamp = serverTimestamp();
+            } else {
+                // If offline, use a locally generated timestamp
+                timestamp = new Date();
+            }
+
+            const formattedTimestamp = timestamp.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                timeZoneName: 'short',
+            });
+
+            // Check online status
+            if (navigator.onLine) {
                 // If online, add the result to Firestore
                 const barcodeResultsCollection = collection(firestore, `history`);
 
@@ -55,7 +74,7 @@ export default function Camera() {
                 await addDoc(barcodeResultsCollection, {
                     userUid,
                     scanned: result.getText(),
-                    timestamp,
+                    timestamp: formattedTimestamp,
                 })
                     .then(() => {
                         console.log('Result added to Firestore successfully');
@@ -69,7 +88,7 @@ export default function Camera() {
                 offlineScans.push({
                     userUid,
                     scanned: result.getText(),
-                    timestamp,
+                    timestamp: formattedTimestamp,
                 });
                 localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
             }
@@ -79,7 +98,6 @@ export default function Camera() {
                 setScanning(false);
             }, 2000); // Adjust the delay time (in milliseconds) as needed
         }
-
     });
 
     const uploadOfflineScans = async () => {
