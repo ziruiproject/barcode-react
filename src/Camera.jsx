@@ -109,7 +109,7 @@ export default function Camera() {
             const capabilities = track.getCapabilities();
 
             if (capabilities.torch) {
-                await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+                await track.applyConstraints({ advanced: [{ torch: !torchOn }] });
                 setTorchOn(!torchOn);
             } else {
                 console.error('Torch is not supported on this device.');
@@ -131,6 +131,20 @@ export default function Camera() {
         });
 
         return () => unsubscribe();
+    }, []);
+
+    // Listen for the online event to upload offline scans when back online
+    useEffect(() => {
+        const handleOnline = () => {
+            console.log('Online');
+            uploadOfflineScans(); // Upload offline scans when back online
+        };
+
+        window.addEventListener('online', handleOnline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+        };
     }, []);
 
     return (
