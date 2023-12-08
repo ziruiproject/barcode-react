@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import { auth } from "./firebase";
 import { firestore } from "./firebase";
-import { collection, getDocs, query, where, orderBy, addDoc, serverTimestamp, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 import successSound from './success.mp3'
 
@@ -10,6 +10,8 @@ export default function Camera() {
     const [result, setResult] = useState("");
     const [scanning, setScanning] = useState(false);
     const [torchOn, setTorchOn] = useState(false);
+
+    const offlineScansKey = 'offlineScans';
 
     // Use Barcode Scanner
     const { ref } = useZxing({
@@ -35,21 +37,33 @@ export default function Camera() {
             const userUid = user.uid;
             const timestamp = serverTimestamp();
 
-            // Add the result to Firestore
-            const barcodeResultsCollection = collection(firestore, `history`);
+            // Check online status
+            if (navigator.onLine) {
+                // If online, add the result to Firestore
+                const barcodeResultsCollection = collection(firestore, `history`);
 
-            // Create a new document with user UID, result, and timestamp
-            await addDoc(barcodeResultsCollection, {
-                userUid,
-                scanned: result.getText(),
-                timestamp,
-            })
-                .then(() => {
-                    console.log('Result added to Firestore successfully');
+                // Create a new document with user UID, result, and timestamp
+                await addDoc(barcodeResultsCollection, {
+                    userUid,
+                    scanned: result.getText(),
+                    timestamp,
                 })
-                .catch((error) => {
-                    console.error('Error adding result to Firestore: ', error);
+                    .then(() => {
+                        console.log('Result added to Firestore successfully');
+                    })
+                    .catch((error) => {
+                        console.error('Error adding result to Firestore: ', error);
+                    });
+            } else {
+                // If offline, store the result in localStorage
+                const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
+                offlineScans.push({
+                    userUid,
+                    scanned: result.getText(),
+                    timestamp,
                 });
+                localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
+            }
 
             // Set a delay before allowing the next scan
             setTimeout(() => {
@@ -58,7 +72,27 @@ export default function Camera() {
         },
     });
 
+    const uploadOfflineScans = async () => {
+        const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
+
+        for (const scan of offlineScans) {
+            const barcodeResultsCollection = collection(firestore, `history`);
+
+            await addDoc(barcodeResultsCollection, scan)
+                .then(() => {
+                    console.log('Offline scan uploaded successfully');
+                })
+                .catch((error) => {
+                    console.error('Error uploading offline scan: ', error);
+                });
+        }
+
+        // Clear offline scans from localStorage
+        localStorage.removeItem(offlineScansKey);
+    };
+
     const Logout = () => {
+        uploadOfflineScans(); // Upload offline scans before logging out
         auth.signOut()
             .then(() => {
                 console.log('Signed out successfully');
@@ -101,17 +135,25 @@ export default function Camera() {
 
     return (
         <>
-            <video className="" ref={ref} />
-            <p>
-                <span>Hasil: </span>
-                <span>{result}</span>
-                <button onClick={toggleTorch}>
-                    {torchOn ? 'Turn Off Torch' : 'Turn On Torch'}
-                </button>
-                <button onClick={Logout}>
-                    Logout
-                </button>
-            </p>
+            <div className="flex flex-col items-center mt-0">
+                <video
+                    className="w-screen h-auto"
+                    ref={ref}
+                    style={{ objectFit: 'fill', maxHeight: '100vh' }}
+                />
+                <p className="md:text-4xl mt-4 text-lg font-semibold">
+                    <span>Hasil: </span>
+                    <span>{result}</span>
+                </p>
+                <div className="my-4 space-x-4">
+                    <button className="md:text-3xl md:px-5 md:py-3 px-4 py-2 text-white bg-blue-500 rounded-md" onClick={toggleTorch}>
+                        {torchOn ? 'Senter: Off' : 'Senter: On'}
+                    </button>
+                    <button className="md:text-3xl md:px-5 md:py-3 px-4 py-2 text-white bg-red-500 rounded-md" onClick={Logout}>
+                        Logout
+                    </button>
+                </div>
+            </div>
         </>
     );
 };
