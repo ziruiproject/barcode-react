@@ -35,7 +35,16 @@ export default function Camera() {
 
             const user = auth.currentUser;
             const userUid = user.uid;
-            const timestamp = serverTimestamp();
+            let timestamp;
+
+            // Check online status
+            if (navigator.onLine) {
+                // If online, use serverTimestamp
+                timestamp = serverTimestamp();
+            } else {
+                // If offline, use a locally generated timestamp
+                timestamp = new Date();
+            }
 
             // Check online status
             if (navigator.onLine) {
@@ -69,7 +78,8 @@ export default function Camera() {
             setTimeout(() => {
                 setScanning(false);
             }, 2000); // Adjust the delay time (in milliseconds) as needed
-        },
+        }
+
     });
 
     const uploadOfflineScans = async () => {
