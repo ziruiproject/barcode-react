@@ -101,17 +101,25 @@ export default function Camera() {
 
     return (
         <>
-            <video className="" ref={ref} />
-            <p>
-                <span>Hasil: </span>
-                <span>{result}</span>
-                <button onClick={toggleTorch}>
-                    {torchOn ? 'Turn Off Torch' : 'Turn On Torch'}
-                </button>
-                <button onClick={Logout}>
-                    Logout
-                </button>
-            </p>
+            <div className="flex flex-col items-center mt-0">
+                <video
+                    className="w-screen h-auto"
+                    ref={ref}
+                    style={{ objectFit: 'fill', maxHeight: '100vh' }}
+                />
+                <p className="md:text-4xl mt-4 text-lg font-semibold">
+                    <span>Hasil: </span>
+                    <span>{result}</span>
+                </p>
+                <div className="my-4 space-x-4">
+                    <button className="md:text-3xl md:px-5 md:py-3 px-4 py-2 text-white bg-blue-500 rounded-md" onClick={toggleTorch}>
+                        {torchOn ? 'Senter: Off' : 'Senter: On'}
+                    </button>
+                    <button className="md:text-3xl md:px-5 md:py-3 px-4 py-2 text-white bg-red-500 rounded-md" onClick={Logout}>
+                        Logout
+                    </button>
+                </div>
+            </div>
         </>
     );
 };
