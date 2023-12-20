@@ -46,15 +46,6 @@ export default function Camera() {
                 timestamp = new Date();
             }
 
-            // Check online status
-            if (navigator.onLine) {
-                // If online, use serverTimestamp
-                timestamp = serverTimestamp();
-            } else {
-                // If offline, use a locally generated timestamp
-                timestamp = new Date();
-            }
-
             const formattedTimestamp = timestamp.toLocaleString('en-US', {
                 year: 'numeric',
                 month: 'long',
