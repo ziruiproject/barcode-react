@@ -7,10 +7,10 @@ export default function Home() {
             <button onClick={() => { window.location.replace('/camera') }}>
                 Scan di Lokasi
             </button>
-            <button onClick={() => { window.location.replace('/camera') }}>
+            <button onClick={() => { window.location.replace('/history/scan') }}>
                 History Scan
             </button>
-            <button onClick={() => { window.location.replace('/camera') }}>
+            <button onClick={() => { window.location.replace('/') }}>
                 Lapor Kejadian
             </button>
             <button onClick={() => { window.location.replace('/camera') }}>

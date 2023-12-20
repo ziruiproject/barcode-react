@@ -6,6 +6,7 @@ import Camera from './Camera';
 import Home from './Home';
 import ScanHistory from './ScanHistory';
 import EventHistory from './EventHistory';
+import Report from './Report';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
           <Route path="home" Component={Home} />
           <Route path="login" Component={Login} />
           <Route path="camera" Component={Camera} />
+          <Route path="lapor" Component={Report} />
         </Route>
         <Route path='/history'>
           <Route path="scan" Component={ScanHistory} />
