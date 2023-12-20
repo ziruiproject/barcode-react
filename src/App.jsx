@@ -1,19 +1,47 @@
 // App.js
-import React from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
 import Camera from './Camera';
+import Home from './Home';
+import ScanHistory from './ScanHistory';
+import EventHistory from './EventHistory';
+import Report from './Report';
+import { auth } from './firebase';
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/">
-          <Route path="login" Component={Login} />
-          <Route path="" Component={Camera} />
-        </Route>
+        <Route path="login" element={<Login />} />
+
+        {/* General Route for protected routes */}
+        <Route
+          path="/*"
+          element={isAuthenticated ? (
+            <>
+              <Route index element={<Home />} />
+              <Route path="camera" element={<Camera />} />
+              <Route path="lapor" element={<Report />} />
+              <Route path="history/scan" element={<ScanHistory />} />
+              <Route path="history/kejadian" element={<EventHistory />} />
+            </>
+          ) : (
+            <Navigate to="/login" />
+          )}
+        />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 };
 
