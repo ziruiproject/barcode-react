@@ -4,6 +4,8 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './Login';
 import Camera from './Camera';
 import Home from './Home';
+import ScanHistory from './ScanHistory';
+import EventHistory from './EventHistory';
 
 const App = () => {
   return (
@@ -13,6 +15,10 @@ const App = () => {
           <Route path="home" Component={Home} />
           <Route path="login" Component={Login} />
           <Route path="camera" Component={Camera} />
+        </Route>
+        <Route path='/history'>
+          <Route path="scan" Component={ScanHistory} />
+          <Route path="kejadian" Component={EventHistory} />
         </Route>
       </Routes>
     </BrowserRouter>
