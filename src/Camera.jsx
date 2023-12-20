@@ -149,7 +149,7 @@ export default function Camera() {
             }
         });
 
-        return () => unsubscribe();
+        return () => unsubscribe;
     }, []);
 
     // Listen for the online event to upload offline scans when back online

@@ -7,13 +7,27 @@ import Home from './Home';
 import ScanHistory from './ScanHistory';
 import EventHistory from './EventHistory';
 import Report from './Report';
+import { GuardProvider, GuardedRoute } from 'react-router-guards'; import { GuardProvider, GuardedRoute } from 'react-router-guards';
+import { auth } from "./firebase";
 
 const App = () => {
+
+  const isAuthenticated = () => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log(user);
+      if (!user) {
+        window.location.replace('/login');
+      }
+    });
+
+    return () => unsubscribe;
+  }
+
   return (
     <BrowserRouter>
-      <Routes>
+      <GuardProvider>
         <Route path="/">
-          <Route path="home" Component={Home} />
+          <Route path="" Component={Home} />
           <Route path="login" Component={Login} />
           <Route path="camera" Component={Camera} />
           <Route path="lapor" Component={Report} />
@@ -22,7 +36,7 @@ const App = () => {
           <Route path="scan" Component={ScanHistory} />
           <Route path="kejadian" Component={EventHistory} />
         </Route>
-      </Routes>
+      </GuardProvider>
     </BrowserRouter>
   );
 };
