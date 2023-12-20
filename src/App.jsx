@@ -1,43 +1,47 @@
 // App.js
-import React from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './Login';
 import Camera from './Camera';
 import Home from './Home';
 import ScanHistory from './ScanHistory';
 import EventHistory from './EventHistory';
 import Report from './Report';
-import { GuardProvider, GuardedRoute } from 'react-router-guards'; import { GuardProvider, GuardedRoute } from 'react-router-guards';
-import { auth } from "./firebase";
+import { auth } from './firebase';
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated = () => {
+  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log(user);
-      if (!user) {
-        window.location.replace('/login');
-      }
+      setIsAuthenticated(!!user);
     });
 
-    return () => unsubscribe;
-  }
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <BrowserRouter>
-      <GuardProvider>
-        <Route path="/">
-          <Route path="" Component={Home} />
-          <Route path="login" Component={Login} />
-          <Route path="camera" Component={Camera} />
-          <Route path="lapor" Component={Report} />
-        </Route>
-        <Route path='/history'>
-          <Route path="scan" Component={ScanHistory} />
-          <Route path="kejadian" Component={EventHistory} />
-        </Route>
-      </GuardProvider>
-    </BrowserRouter>
+    <Router>
+      <Routes>
+        <Route path="login" element={<Login />} />
+
+        {/* General Route for protected routes */}
+        <Route
+          path="/*"
+          element={isAuthenticated ? (
+            <>
+              <Route index element={<Home />} />
+              <Route path="camera" element={<Camera />} />
+              <Route path="lapor" element={<Report />} />
+              <Route path="history/scan" element={<ScanHistory />} />
+              <Route path="history/kejadian" element={<EventHistory />} />
+            </>
+          ) : (
+            <Navigate to="/login" />
+          )}
+        />
+      </Routes>
+    </Router>
   );
 };
 
