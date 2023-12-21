@@ -36,7 +36,7 @@ export default function Report() {
             });
 
             console.log('Report added with ID:', newReportRef.id);
-
+            window.location.replace('/history/');
         } catch (error) {
             console.error('Error adding report:', error);
         }

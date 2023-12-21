@@ -14,10 +14,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/camera" element={<Camera />} />
+        <Route path="/scan" element={<Camera />} />
         <Route path="/lapor" element={<Report />} />
         <Route path="/history/scan" element={<ScanHistory />} />
-        <Route path="/kejadian" element={<EventHistory />} />
+        <Route path="/history/lapor" element={<EventHistory />} />
       </Routes>
     </BrowserRouter>
   );
