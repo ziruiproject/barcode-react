@@ -3,6 +3,7 @@ import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/fir
 import { firestore } from './firebase'; // Import your Firebase configuration
 import { useEffect } from 'react';
 import { auth } from './firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Report() {
     const [reportDate, setReportDate] = useState('');
@@ -14,8 +15,17 @@ export default function Report() {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        setReportPhotos(files);
+
+        setReportPhotos((prevPhotos) => [
+            ...prevPhotos,
+            ...files.map((file) => ({
+                file,
+                id: uuidv4(),
+                url: URL.createObjectURL(file),
+            })),
+        ]);
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,12 +41,15 @@ export default function Report() {
                 title: reportTitle,
                 location: reportLocation,
                 description: reportDescription,
-                photos: reportPhotos.map((photo) => photo.name), // Store photo names or URLs in Firestore
-                timestamp: serverTimestamp(), // Server timestamp for when the report is submitted
+                photos: reportPhotos.map((photo) => ({
+                    id: photo.id,
+                    url: photo.url,
+                })),
+                timestamp: serverTimestamp(),
             });
 
             console.log('Report added with ID:', newReportRef.id);
-            window.location.replace('/history/');
+            window.location.replace('/history/lapor');
         } catch (error) {
             console.error('Error adding report:', error);
         }
