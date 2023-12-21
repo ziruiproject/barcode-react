@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { firestore } from './firebase'; // Import your Firebase configuration
+import { useEffect } from 'react';
+import { auth } from './firebase';
 
 export default function Report() {
     const [reportDate, setReportDate] = useState('');
@@ -8,6 +10,7 @@ export default function Report() {
     const [reportLocation, setReportLocation] = useState('');
     const [reportDescription, setReportDescription] = useState('');
     const [reportPhotos, setReportPhotos] = useState([]);
+    const [userId, setUserId] = useState('');
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -21,8 +24,9 @@ export default function Report() {
             // Create a reference to the 'reports' collection in Firestore
             const reportsCollection = collection(firestore, 'reports');
 
-            // Add a new document with the report data
+            // Add a new document with the report data and user ID
             const newReportRef = await addDoc(reportsCollection, {
+                userId: userId,
                 date: reportDate,
                 title: reportTitle,
                 location: reportLocation,
@@ -33,12 +37,24 @@ export default function Report() {
 
             console.log('Report added with ID:', newReportRef.id);
 
-            // Redirect to the history page after saving (replace '/history' with the actual route)
-            // history.push('/history');
         } catch (error) {
             console.error('Error adding report:', error);
         }
     };
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                setUserId(user.uid);
+                console.log(userId)
+            } else {
+                console.error('User not authenticated.');
+                window.location.replace('/login');
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     return (
         <div className="max-w-2xl mx-auto p-4">
