@@ -1,11 +1,16 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import Login from '../src/Login.jsx'
+// Import necessary dependencies
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
+import App from './App';
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// Use createRoot to render your app
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+// Render your app within the root
+root.render(
   <React.StrictMode>
-    <App></App>
+    <App />
   </React.StrictMode>,
-)
+);
