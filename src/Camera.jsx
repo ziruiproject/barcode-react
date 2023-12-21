@@ -10,6 +10,7 @@ export default function Camera() {
     const [result, setResult] = useState("");
     const [scanning, setScanning] = useState(false);
     const [torchOn, setTorchOn] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     const offlineScansKey = 'offlineScans';
 
@@ -140,6 +141,15 @@ export default function Camera() {
         }
     };
 
+    const handleSuccessPopupClose = () => {
+        setShowSuccessPopup(false);
+        setResult(""); // Clear the result after closing the pop-up
+    };
+
+    const handleScanSuccess = () => {
+        setShowSuccessPopup(true);
+    };
+
     // Check User Auth State
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -187,6 +197,21 @@ export default function Camera() {
                     </button>
                 </div>
             </div>
+
+            {showSuccessPopup && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-4 rounded-md text-center">
+                        <p className="text-2xl font-semibold mb-4">Scan Success!</p>
+                        <p className="text-lg mb-4">Barcode: {result}</p>
+                        <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                            onClick={handleSuccessPopupClose}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
