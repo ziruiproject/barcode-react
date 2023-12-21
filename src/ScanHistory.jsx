@@ -11,7 +11,7 @@ export default function ScanHistory() {
 
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-        return date.toLocaleString(); // Adjust the format based on your preference
+        return date.toLocaleString('id-ID'); // Use 'id-ID' locale for Indonesian format
     };
 
     const handleDateChange = async (date) => {
@@ -31,6 +31,11 @@ export default function ScanHistory() {
         } catch (error) {
             console.error('Error fetching scan history:', error);
         }
+    };
+
+    const formatDate = (date) => {
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        return date.toLocaleDateString('id-ID', options);
     };
 
     useEffect(() => {
@@ -54,18 +59,23 @@ export default function ScanHistory() {
             <h1 className="text-3xl font-bold mb-4">Scan History</h1>
             <div className="mb-4">
                 <label className="mr-2">Select Date:</label>
-                <DatePicker selected={selectedDate} onChange={handleDateChange} className="border p-2" />
+                <DatePicker
+                    selected={selectedDate}
+                    onChange={handleDateChange}
+                    className="border p-2"
+                    dateFormat="dd/MM/yyyy"  // Set the date format here
+                />
             </div>
             <div>
-                <p className="mb-2">Scan history for {selectedDate.toDateString()}:</p>
+                <p className="mb-2">Riwayat hasil scan pada {formatDate(selectedDate)}</p>
                 {scanHistory.length === 0 ? (
                     <p className="text-gray-500">Tidak ada data</p>
                 ) : (
                     <ul>
                         {scanHistory.map((scan, index) => (
                             <li key={index} className="border p-2 mb-2">
-                                <span className="font-bold">Scanned:</span> {scan.scanned},{' '}
-                                <span className="font-bold">Timestamp:</span> {formatTimestamp(scan.timestamp)}
+                                <span className="font-bold">Data:</span> {scan.scanned} <br />
+                                <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)}
                             </li>
                         ))}
                     </ul>
