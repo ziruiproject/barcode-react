@@ -36,13 +36,13 @@ export default function EventHistory() {
 
     if (loading) {
         return (
-            <div className="max-w-2xl mx-auto p-4 text-center">
+            <div className="flex items-center justify-center align-middle h-screen">
                 <MutatingDots
                     visible={true}
                     height="100"
                     width="100"
-                    color="#4fa94d"
-                    secondaryColor="#4fa94d"
+                    color="#2563EB"
+                    secondaryColor="#2563EB"
                     radius="12.5"
                     ariaLabel="mutating-dots-loading"
                     wrapperStyle={{}}
