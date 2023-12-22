@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import React, { useState, useEffect } from 'react';
+import {
+    collection,
+    addDoc,
+    serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import {
+    getStorage,
+    ref,
+    uploadBytes,
+    getDownloadURL,
+} from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
 import { firestore } from './firebase'; // Import your Firebase configuration
-import { useEffect } from 'react';
 import { auth } from './firebase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,18 +30,40 @@ export default function Report() {
             ...files.map((file) => ({
                 file,
                 id: uuidv4(),
-                url: URL.createObjectURL(file),
+                storageRef: null, // Reference to the image in Firebase Storage
+                url: null, // URL to display or download the image
             })),
         ]);
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
+            const storage = getStorage();
+
+            // Upload each image to Firebase Storage
+            for (const photo of reportPhotos) {
+                const storageRef = ref(storage, `reports/${photo.id}`);
+                await uploadBytes(storageRef, photo.file);
+                photo.storageRef = storageRef;
+
+                // Get the download URL for each uploaded image
+                const downloadURL = await getDownloadURL(storageRef);
+                photo.url = downloadURL;
+            }
+
             // Create a reference to the 'reports' collection in Firestore
             const reportsCollection = collection(firestore, 'reports');
+
+            // Get the current user ID from Firebase Authentication
+            const user = auth.currentUser;
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                console.error('User not authenticated.');
+                return;
+            }
 
             // Add a new document with the report data and user ID
             const newReportRef = await addDoc(reportsCollection, {
@@ -59,7 +90,6 @@ export default function Report() {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 setUserId(user.uid);
-                console.log(userId)
             } else {
                 console.error('User not authenticated.');
                 window.location.replace('/login');
