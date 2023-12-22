@@ -16,7 +16,7 @@ export default function Home() {
                 className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">
                 Lapor Kejadian
             </button>
-            <button onClick={() => { window.location.replace('/history/kejadian') }}
+            <button onClick={() => { window.location.replace('/history/lapor') }}
                 className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">
                 History Kejadian
             </button>
