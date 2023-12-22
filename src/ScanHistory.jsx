@@ -74,6 +74,7 @@ export default function ScanHistory() {
                     <ul>
                         {scanHistory.map((scan, index) => (
                             <li key={index} className="border p-2 mb-2">
+                                <span className="font-bold">User:</span> {scan.userUid} <br />
                                 <span className="font-bold">Data:</span> {scan.scanned} <br />
                                 <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)}
                             </li>
