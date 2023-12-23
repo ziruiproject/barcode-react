@@ -55,7 +55,7 @@ export default function Camera() {
                     offlineScans.push({
                         userUid,
                         scanned: result.getText(),
-                        unixEpochTime: unixEpochTime,
+                        timestamp: unixEpochTime,
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
                 }

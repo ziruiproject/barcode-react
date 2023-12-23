@@ -42,7 +42,9 @@ export default function ScanHistory() {
 
             const querySnapshot = await getDocs(q);
             const scanHistoryData = querySnapshot.docs.map((doc) => doc.data());
+            console.log('Fetched Scan History Data:', scanHistoryData);
             setScanHistory(scanHistoryData);
+
         } catch (error) {
             console.error('Error fetching scan history:', error);
         }
