@@ -4,7 +4,7 @@ export default function Home() {
 
     return (
         <div className=' flex flex-col items-center justify-center h-screen'>
-            <button onClick={() => { window.location.replace('/camera') }}
+            <button onClick={() => { window.location.replace('/scan') }}
                 className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">
                 Scan di Lokasi
             </button>
