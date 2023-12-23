@@ -10,8 +10,20 @@ export default function ScanHistory() {
     const [scanHistory, setScanHistory] = useState([]);
 
     const formatTimestamp = (timestamp) => {
-        const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-        return date.toLocaleString('id-ID'); // Use 'id-ID' locale for Indonesian format
+        const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
+
+        // Set the timezone to 'Asia/Jakarta' (WIB)
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Jakarta'
+        };
+
+        const formattedTime = new Intl.DateTimeFormat('en-US', options).format(date);
+
+        return formattedTime;
     };
 
     const handleDateChange = async (date) => {
@@ -19,10 +31,13 @@ export default function ScanHistory() {
 
         try {
             const scanHistoryCollection = collection(firestore, 'history');
+            const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
             const q = query(
                 scanHistoryCollection,
-                where('timestamp', '>=', new Date(date.getFullYear(), date.getMonth(), date.getDate())),
-                where('timestamp', '<', new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1))
+                where('timestamp', '>=', startOfDay.getTime() / 1000),
+                where('timestamp', '<', endOfDay.getTime() / 1000)
             );
 
             const querySnapshot = await getDocs(q);
@@ -76,7 +91,7 @@ export default function ScanHistory() {
                             <li key={index} className="border p-2 mb-2">
                                 <span className="font-bold">User:</span> {scan.userUid} <br />
                                 <span className="font-bold">Data:</span> {scan.scanned} <br />
-                                <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)}
+                                <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)} <span>WIB</span>
                             </li>
                         ))}
                     </ul>

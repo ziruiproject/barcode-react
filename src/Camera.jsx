@@ -44,7 +44,7 @@ export default function Camera() {
                         await addDoc(barcodeResultsCollection, {
                             userUid,
                             scanned: result.getText(),
-                            unixEpochTime: unixEpochTime,
+                            timestamp: unixEpochTime,
                         });
                         console.log('Result added to Firestore successfully');
                     } catch (error) {
