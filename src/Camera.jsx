@@ -11,22 +11,20 @@ export default function Camera() {
     const [scanning, setScanning] = useState(false);
     const [torchOn, setTorchOn] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [offline, setOffline] = useState(!navigator.onLine);
 
     const offlineScansKey = 'offlineScans';
 
-    // Use Barcode Scanner
     const { ref } = useZxing({
-        readers: [], // Empty array allows ZXing to attempt all supported barcode types
+        readers: [],
         async onDecodeResult(result) {
             if (scanning) {
-                // If already scanning, ignore the result
                 return;
             }
 
             setScanning(true);
             setResult(result.getText());
 
-            // Play a success sound when a barcode is successfully scanned
             try {
                 const audio = new Audio(successSound);
                 audio.play();
@@ -35,61 +33,40 @@ export default function Camera() {
             }
 
             const user = auth.currentUser;
-            const userUid = user.uid;
-            let timestamp;
 
-            // Check online status
-            if (navigator.onLine) {
-                // If online, use serverTimestamp
-                timestamp = serverTimestamp();
-            } else {
-                // If offline, use a locally generated timestamp
-                timestamp = new Date();
-            }
+            if (user && user.uid) {
+                const userUid = user.uid;
+                const unixEpochTime = Math.floor(new Date().getTime() / 1000);
 
-            const formattedTimestamp = timestamp.toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-                timeZoneName: 'short',
-            });
-
-            // Check online status
-            if (navigator.onLine) {
-                // If online, add the result to Firestore
-                const barcodeResultsCollection = collection(firestore, `history`);
-
-                // Create a new document with user UID, result, and timestamp
-                await addDoc(barcodeResultsCollection, {
-                    userUid,
-                    scanned: result.getText(),
-                    timestamp: formattedTimestamp,
-                })
-                    .then(() => {
+                if (navigator.onLine) {
+                    const barcodeResultsCollection = collection(firestore, 'history');
+                    try {
+                        await addDoc(barcodeResultsCollection, {
+                            userUid,
+                            scanned: result.getText(),
+                            unixEpochTime: unixEpochTime,
+                        });
                         console.log('Result added to Firestore successfully');
-                    })
-                    .catch((error) => {
+                    } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
+                    }
+                } else {
+                    const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
+                    offlineScans.push({
+                        userUid,
+                        scanned: result.getText(),
+                        unixEpochTime: unixEpochTime,
                     });
+                    localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
+                }
             } else {
-                // If offline, store the result in localStorage
-                const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
-                offlineScans.push({
-                    userUid,
-                    scanned: result.getText(),
-                    timestamp: formattedTimestamp,
-                });
-                localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
+                console.warn('No authenticated user found.');
             }
 
-            // Set a delay before allowing the next scan
             setTimeout(() => {
                 setScanning(false);
-            }, 2000); // Adjust the delay time (in milliseconds) as needed
-        }
+            }, 2000);
+        },
     });
 
     const uploadOfflineScans = async () => {
@@ -176,8 +153,33 @@ export default function Camera() {
         };
     }, []);
 
+    useEffect(() => {
+        const handleOnline = () => {
+            console.log('Online');
+            setOffline(false);
+        };
+
+        const handleOffline = () => {
+            console.log('Offline');
+            setOffline(true);
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
     return (
         <>
+            {offline && (
+                <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-center p-2">
+                    Anda Offline! Hasil scan akan diupload saat Anda kembali Online.
+                </div>
+            )}
             <div className="flex flex-col items-center mt-0">
                 <video
                     className="w-screen h-auto"
