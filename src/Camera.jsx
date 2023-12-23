@@ -204,7 +204,7 @@ export default function Camera() {
                                 window.location.replace('/');
                             }}
                         >
-                            Lihat Riwayat
+                            Kembali ke Beranda
                         </button>
                     </div>
                 </div>
