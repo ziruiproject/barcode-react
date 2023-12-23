@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import { auth } from "./firebase";
 import { firestore } from "./firebase";
-import { collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 import successSound from './success.mp3'
 
@@ -25,12 +25,7 @@ export default function Camera() {
             setScanning(true);
             setResult(result.getText());
 
-            try {
-                const audio = new Audio(successSound);
-                audio.play();
-            } catch (error) {
-                console.error('Error playing sound:', error);
-            }
+            const audio = new Audio(successSound);
 
             const user = auth.currentUser;
 
@@ -49,6 +44,9 @@ export default function Camera() {
                         console.log('Result added to Firestore successfully');
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
+                    } finally {
+                        audio.play();
+                        handleScanSuccess();
                     }
                 } else {
                     const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
@@ -58,6 +56,8 @@ export default function Camera() {
                         timestamp: unixEpochTime,
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
+                    audio.play();
+                    handleScanSuccess();
                 }
             } else {
                 console.warn('No authenticated user found.');
@@ -116,11 +116,6 @@ export default function Camera() {
         } catch (error) {
             console.error('Error toggling torch:', error);
         }
-    };
-
-    const handleSuccessPopupClose = () => {
-        setShowSuccessPopup(false);
-        setResult(""); // Clear the result after closing the pop-up
     };
 
     const handleScanSuccess = () => {
@@ -186,10 +181,6 @@ export default function Camera() {
                     ref={ref}
                     style={{ objectFit: 'fill', maxHeight: '100vh' }}
                 />
-                <p className="md:text-4xl mt-4 text-lg font-semibold">
-                    <span>Hasil: </span>
-                    <span>{result}</span>
-                </p>
                 <div className="my-4 space-x-4">
                     <button className="md:text-3xl md:px-5 md:py-3 px-4 py-2 text-white bg-blue-500 rounded-md" onClick={toggleTorch}>
                         {torchOn ? 'Senter: Off' : 'Senter: On'}
@@ -203,13 +194,17 @@ export default function Camera() {
             {showSuccessPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white p-4 rounded-md text-center">
-                        <p className="text-2xl font-semibold mb-4">Scan Success!</p>
-                        <p className="text-lg mb-4">Barcode: {result}</p>
+                        <p className="text-2xl font-semibold mb-4">Scan Berhasil!</p>
+                        <p className="text-lg mb-4">Hasil: {result}</p>
                         <button
                             className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                            onClick={handleSuccessPopupClose}
+                            onClick={() => {
+                                setShowSuccessPopup(false);
+                                setResult("");
+                                window.location.replace('/history/scan');
+                            }}
                         >
-                            Close
+                            Lihat Riwayat
                         </button>
                     </div>
                 </div>
