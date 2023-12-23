@@ -201,7 +201,7 @@ export default function Camera() {
                             onClick={() => {
                                 setShowSuccessPopup(false);
                                 setResult("");
-                                window.location.replace('/history/scan');
+                                window.location.replace('/');
                             }}
                         >
                             Lihat Riwayat
