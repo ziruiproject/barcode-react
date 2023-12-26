@@ -186,16 +186,17 @@ export default function Camera() {
                     <div className="bg-white p-4 rounded-md text-center">
                         <p className="text-2xl font-semibold mb-4">Scan Berhasil!</p>
                         <p className="text-lg mb-4">Hasil: {result}</p>
-                        <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                            onClick={() => {
-                                setShowSuccessPopup(false);
-                                setResult("");
-                                window.location.replace('/');
-                            }}
-                        >
-                            Kembali ke Beranda
-                        </button>
+                        <Link to="/">
+                            <button
+                                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                onClick={() => {
+                                    setShowSuccessPopup(false);
+                                    setResult("");
+                                }}
+                            >
+                                Kembali ke Beranda
+                            </button>
+                        </Link>
                     </div>
                 </div>
             )}
