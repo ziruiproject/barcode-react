@@ -28,7 +28,7 @@ export default function EventHistory() {
         };
 
         fetchReports();
-    }, []); // Empty dependency array ensures that the effect runs once when the component mounts
+    }, []);
 
     const handleDateChange = (date) => {
         setSelectedDate(date);

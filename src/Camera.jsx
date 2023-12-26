@@ -41,7 +41,6 @@ export default function Camera() {
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
                         });
-                        console.log('Result added to Firestore successfully');
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
                     } finally {
@@ -76,9 +75,6 @@ export default function Camera() {
             const barcodeResultsCollection = collection(firestore, `history`);
 
             await addDoc(barcodeResultsCollection, scan)
-                .then(() => {
-                    console.log('Offline scan uploaded successfully');
-                })
                 .catch((error) => {
                     console.error('Error uploading offline scan: ', error);
                 });
@@ -91,9 +87,6 @@ export default function Camera() {
     const Logout = () => {
         uploadOfflineScans(); // Upload offline scans before logging out
         auth.signOut()
-            .then(() => {
-                console.log('Signed out successfully');
-            })
             .catch((error) => {
                 console.error('Error signing out:', error.message);
             });
@@ -137,7 +130,6 @@ export default function Camera() {
     // Listen for the online event to upload offline scans when back online
     useEffect(() => {
         const handleOnline = () => {
-            console.log('Online');
             uploadOfflineScans(); // Upload offline scans when back online
         };
 
@@ -150,12 +142,10 @@ export default function Camera() {
 
     useEffect(() => {
         const handleOnline = () => {
-            console.log('Online');
             setOffline(false);
         };
 
         const handleOffline = () => {
-            console.log('Offline');
             setOffline(true);
         };
 
