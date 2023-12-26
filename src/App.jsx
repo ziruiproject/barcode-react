@@ -7,6 +7,7 @@ import Camera from './Camera';
 import ScanHistory from './ScanHistory';
 import EventHistory from './EventHistory';
 import Report from './Report';
+import Ganti from './Ganti';
 
 export default function App() {
   return (
@@ -17,7 +18,8 @@ export default function App() {
         <Route path="/scan" element={<Camera />} />
         <Route path="/lapor" element={<Report />} />
         <Route path="/history/scan" element={<ScanHistory />} />
-        <Route path="/history/lapor" element={<EventHistory />} />
+        <Route path="/history/kejadian" element={<EventHistory />} />
+        <Route path="/ganti" element={<Ganti />} />
       </Routes>
     </BrowserRouter>
   );

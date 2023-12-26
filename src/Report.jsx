@@ -66,7 +66,7 @@ export default function Report() {
             }
 
             // Add a new document with the report data and user ID
-            const newReportRef = await addDoc(reportsCollection, {
+            await addDoc(reportsCollection, {
                 userId: userId,
                 date: reportDate,
                 title: reportTitle,
@@ -78,8 +78,6 @@ export default function Report() {
                 })),
                 timestamp: serverTimestamp(),
             });
-
-            console.log('Report added with ID:', newReportRef.id);
             window.location.replace('/history/lapor');
         } catch (error) {
             console.error('Error adding report:', error);
