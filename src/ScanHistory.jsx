@@ -54,7 +54,6 @@ export default function ScanHistory() {
 
                 if (userDocSnapshot.exists()) {
                     const userData = userDocSnapshot.data();
-                    console.log(userData)
                     const displayName = userData.displayName;
 
                     // Add displayName to historyData
@@ -94,14 +93,14 @@ export default function ScanHistory() {
     }, []);
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Riwayat Scan</h1>
+        <div className="max-w-2xl p-4 mx-auto">
+            <h1 className="mb-4 text-3xl font-bold">Riwayat Scan</h1>
             <div className="mb-4">
                 <label className="mr-2">Select Date:</label>
                 <DatePicker
                     selected={selectedDate}
                     onChange={handleDateChange}
-                    className="border p-2"
+                    className="p-2 border"
                     dateFormat="dd/MM/yyyy"  // Set the date format here
                 />
             </div>
@@ -112,7 +111,7 @@ export default function ScanHistory() {
                 ) : (
                     <ul>
                         {scanHistory.map((scan, index) => (
-                            <li key={index} className="border p-2 mb-2">
+                            <li key={index} className="p-2 mb-2 border">
                                 <span className="font-bold">User:</span> {scan.displayName} <br />
                                 <span className="font-bold">Data:</span> {scan.scanned} <br />
                                 <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)} <span>WIB</span>
