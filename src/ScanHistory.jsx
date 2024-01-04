@@ -4,6 +4,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { collection, query, where, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { firestore } from './firebase';
 import { auth } from './firebase';
+import { Link } from 'react-router-dom'
 
 export default function ScanHistory() {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -92,7 +93,14 @@ export default function ScanHistory() {
 
     return (
         <div className="max-w-2xl p-4 mx-auto">
-            <h1 className="mb-4 text-3xl font-bold">Riwayat Scan</h1>
+            <div className='flex items-center justify-between mb-4'>
+                <h1 className="text-3xl font-bold">Riwayat Scan</h1>
+                <Link to="/scan">
+                    <button className="hover:bg-blue-700 px-4 py-2 text-white transition-all duration-300 ease-in-out bg-blue-500 border rounded-md">
+                        Scan
+                    </button>
+                </Link>
+            </div>
             <div className="mb-4">
                 <label className="mr-2">Select Date:</label>
                 <DatePicker
