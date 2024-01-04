@@ -3,7 +3,6 @@ import { useZxing } from "react-zxing";
 import { auth } from "./firebase";
 import { firestore } from "./firebase";
 import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
 import successSound from './success.mp3'
 
 export default function Camera() {
@@ -118,7 +117,6 @@ export default function Camera() {
     // Check User Auth State
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-            console.log(user);
             if (!user) {
                 window.location.replace('/login');
             }
@@ -161,7 +159,7 @@ export default function Camera() {
     return (
         <>
             {offline && (
-                <div className="fixed top-0 left-0 right-0 bg-red-500 text-white text-center p-2">
+                <div className="fixed top-0 left-0 right-0 p-2 text-center text-white bg-red-500">
                     Anda Offline! Hasil scan akan diupload saat Anda kembali Online.
                 </div>
             )}
@@ -182,21 +180,20 @@ export default function Camera() {
             </div>
 
             {showSuccessPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-4 rounded-md text-center">
-                        <p className="text-2xl font-semibold mb-4">Scan Berhasil!</p>
-                        <p className="text-lg mb-4">Hasil: {result}</p>
-                        <Link to="/">
-                            <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                                onClick={() => {
-                                    setShowSuccessPopup(false);
-                                    setResult("");
-                                }}
-                            >
-                                Kembali ke Beranda
-                            </button>
-                        </Link>
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="p-4 text-center bg-white rounded-md">
+                        <p className="mb-4 text-2xl font-semibold">Scan Berhasil!</p>
+                        <p className="mb-4 text-lg">Hasil: {result}</p>
+                        <button
+                            className="px-4 py-2 text-white bg-blue-500 rounded-md"
+                            onClick={() => {
+                                setShowSuccessPopup(false);
+                                setResult("");
+                                window.location.replace("/")
+                            }}
+                        >
+                            Kembali ke Beranda
+                        </button>
                     </div>
                 </div>
             )}
