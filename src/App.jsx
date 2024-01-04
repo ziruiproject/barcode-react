@@ -7,7 +7,6 @@ import Camera from './Camera';
 import ScanHistory from './ScanHistory';
 import EventHistory from './EventHistory';
 import Report from './Report';
-import Regis from './Regis';
 
 export default function App() {
   return (
@@ -15,7 +14,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/regis" element={<Regis />} />
         <Route path="/scan" element={<Camera />} />
         <Route path="/lapor" element={<Report />} />
         <Route path="/history/scan" element={<ScanHistory />} />

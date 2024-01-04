@@ -63,7 +63,6 @@ export default function ScanHistory() {
                 scanHistoryData.push(historyData);
             }
 
-            // console.log('Fetched Scan History Data:', scanHistoryData);
             setScanHistory(scanHistoryData);
 
         } catch (error) {
@@ -83,7 +82,6 @@ export default function ScanHistory() {
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
-            console.log(user);
             if (!user) {
                 window.location.replace('/login');
             }
