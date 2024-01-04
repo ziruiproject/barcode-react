@@ -189,10 +189,10 @@ export default function Camera() {
                             onClick={() => {
                                 setShowSuccessPopup(false);
                                 setResult("");
-                                window.location.replace("/")
+                                window.location.replace("/history/scan")
                             }}
                         >
-                            Kembali ke Beranda
+                            Lihat Hasil
                         </button>
                     </div>
                 </div>
