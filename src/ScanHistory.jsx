@@ -55,7 +55,7 @@ export default function ScanHistory() {
 
                 if (userDocSnapshot.exists()) {
                     const userData = userDocSnapshot.data();
-                    const displayName = userData.displayName;
+                    const displayName = userData.name;
 
                     // Add displayName to historyData
                     historyData.displayName = displayName;
