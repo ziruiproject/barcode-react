@@ -10,9 +10,12 @@ export default function Camera() {
     const [scanning, setScanning] = useState(false);
     const [torchOn, setTorchOn] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [coordinates, setCoordinates] = useState(null);
     const [offline, setOffline] = useState(!navigator.onLine);
 
     const offlineScansKey = 'offlineScans';
+
+    console.log(coordinates)
 
     const { ref } = useZxing({
         readers: [],
@@ -39,6 +42,7 @@ export default function Camera() {
                             userUid,
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
+                            coordinates: coordinates,
                         });
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
@@ -52,6 +56,7 @@ export default function Camera() {
                         userUid,
                         scanned: result.getText(),
                         timestamp: unixEpochTime,
+                        coordinates: coordinates,
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
                     audio.play();
@@ -121,6 +126,22 @@ export default function Camera() {
                 window.location.replace('/login');
             }
         });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setCoordinates({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    });
+                },
+                (error) => {
+                    console.error('Error getting location:', error.message);
+                }
+            );
+        } else {
+            console.error('Geolocation is not supported on this device.');
+        }
 
         return () => unsubscribe;
     }, []);
