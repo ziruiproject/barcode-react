@@ -31,6 +31,22 @@ export default function Camera() {
 
             const user = auth.currentUser;
 
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        setCoordinates({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                        });
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error.message);
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported on this device.');
+            }
+
             if (user && user.uid) {
                 const userUid = user.uid;
                 const unixEpochTime = Math.floor(new Date().getTime() / 1000);
@@ -38,6 +54,7 @@ export default function Camera() {
                 if (navigator.onLine) {
                     const barcodeResultsCollection = collection(firestore, 'history');
                     try {
+                        console.log(coordinates)
                         await addDoc(barcodeResultsCollection, {
                             userUid,
                             scanned: result.getText(),
@@ -126,22 +143,6 @@ export default function Camera() {
                 window.location.replace('/login');
             }
         });
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setCoordinates({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                    });
-                },
-                (error) => {
-                    console.error('Error getting location:', error.message);
-                }
-            );
-        } else {
-            console.error('Geolocation is not supported on this device.');
-        }
 
         return () => unsubscribe;
     }, []);
