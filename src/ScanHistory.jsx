@@ -98,9 +98,9 @@ export default function ScanHistory() {
     return (
         <div className="max-w-2xl p-4 mx-auto">
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold mb-2">Riwayat Scan</h1>
+                <h1 className="mb-2 text-3xl font-bold">Scan History</h1>
                 <Link to="/scan">
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-all duration-300 ease-in-out">
+                    <button className="hover:bg-blue-700 px-4 py-2 text-white transition-all duration-300 ease-in-out bg-blue-500 rounded-md">
                         Scan
                     </button>
                 </Link>
@@ -116,26 +116,28 @@ export default function ScanHistory() {
             </div>
             <div>
                 <p className="mb-2">
-                    Riwayat hasil scan pada {formatDate(selectedDate)}
+                    Scan history on {formatDate(selectedDate)}
                 </p>
                 {scanHistory.length === 0 ? (
-                    <p className="text-gray-500">Tidak ada data</p>
+                    <p className="text-gray-500">No data</p>
                 ) : (
                     <ul>
                         {scanHistory.map((scan, index) => (
-                            <li
-                                key={index}
-                                className="bg-gray-100 p-4 mb-4 border rounded-md"
-                            >
-                                <div>
-                                    <span className="font-bold">User:</span> {scan.displayName}{' '}
+                            <li key={index} className="p-4 mb-4 bg-gray-100 border rounded-md">
+                                <div className="mb-2">
+                                    <span className="font-bold">User:</span> {scan.displayName}
+                                </div>
+                                <div className="mb-2">
+                                    <span className="font-bold">Data:</span> {scan.scanned}
+                                </div>
+                                <div className="mb-2">
+                                    <span className="font-bold">Latitude:</span> {scan.coordinates?.latitude || 'N/A'}
+                                </div>
+                                <div className="mb-2">
+                                    <span className="font-bold">Longitude:</span> {scan.coordinates?.longitude || 'N/A'}
                                 </div>
                                 <div>
-                                    <span className="font-bold">Data:</span> {scan.scanned}{' '}
-                                </div>
-                                <div>
-                                    <span className="font-bold">Waktu:</span>{' '}
-                                    {formatTimestamp(scan.timestamp)} <span>WIB</span>
+                                    <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)} WIB
                                 </div>
                             </li>
                         ))}

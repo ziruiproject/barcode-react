@@ -15,11 +15,11 @@ export default function Camera() {
 
     const offlineScansKey = 'offlineScans';
 
-    console.log(coordinates)
 
     const { ref } = useZxing({
         readers: [],
         async onDecodeResult(result) {
+            console.log(coordinates)
             if (scanning) {
                 return;
             }
@@ -30,22 +30,6 @@ export default function Camera() {
             const audio = new Audio(successSound);
 
             const user = auth.currentUser;
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        setCoordinates({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                        });
-                    },
-                    (error) => {
-                        console.error('Error getting location:', error.message);
-                    }
-                );
-            } else {
-                console.error('Geolocation is not supported on this device.');
-            }
 
             if (user && user.uid) {
                 const userUid = user.uid;
@@ -88,6 +72,22 @@ export default function Camera() {
             }, 2000);
         },
     });
+
+    const requestLocationAccess = () => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // User granted location access
+                setCoordinates({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                });
+                console.log(coordinates)
+            },
+            (error) => {
+                console.error('Error getting location:', error.message);
+            }
+        );
+    };
 
     const uploadOfflineScans = async () => {
         const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
@@ -138,6 +138,7 @@ export default function Camera() {
 
     // Check User Auth State
     useEffect(() => {
+        requestLocationAccess();
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.replace('/login');
