@@ -10,13 +10,16 @@ export default function Camera() {
     const [scanning, setScanning] = useState(false);
     const [torchOn, setTorchOn] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [coordinates, setCoordinates] = useState(null);
     const [offline, setOffline] = useState(!navigator.onLine);
 
     const offlineScansKey = 'offlineScans';
 
+
     const { ref } = useZxing({
         readers: [],
         async onDecodeResult(result) {
+            console.log(coordinates)
             if (scanning) {
                 return;
             }
@@ -35,10 +38,12 @@ export default function Camera() {
                 if (navigator.onLine) {
                     const barcodeResultsCollection = collection(firestore, 'history');
                     try {
+                        console.log(coordinates)
                         await addDoc(barcodeResultsCollection, {
                             userUid,
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
+                            coordinates: coordinates,
                         });
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
@@ -52,6 +57,7 @@ export default function Camera() {
                         userUid,
                         scanned: result.getText(),
                         timestamp: unixEpochTime,
+                        coordinates: coordinates,
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
                     audio.play();
@@ -66,6 +72,22 @@ export default function Camera() {
             }, 2000);
         },
     });
+
+    const requestLocationAccess = () => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // User granted location access
+                setCoordinates({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                });
+                console.log(coordinates)
+            },
+            (error) => {
+                console.error('Error getting location:', error.message);
+            }
+        );
+    };
 
     const uploadOfflineScans = async () => {
         const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
@@ -116,6 +138,7 @@ export default function Camera() {
 
     // Check User Auth State
     useEffect(() => {
+        requestLocationAccess();
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.replace('/login');
