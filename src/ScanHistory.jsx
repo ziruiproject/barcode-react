@@ -152,7 +152,6 @@ export default function ScanHistory() {
                                     {historyItem.coordinates.longitude}
                                 </span>
                             </span>
-
                         </div>
                     </div>
                 ))}
