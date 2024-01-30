@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 
 export default function ScanHistory() {
     const [selectedDate, setSelectedDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)).getTime());
+    const [selectedOption, setSelectedOption] = useState("0");
     const [userUid, setUserUid] = useState(null);
     const [historyData, setHistoryData] = useState([]);
     const [userData, setUserData] = useState(null)
@@ -16,9 +17,12 @@ export default function ScanHistory() {
         setSelectedDate(new Date(date.setHours(0, 0, 0, 0)));
     };
 
+    const handleSelectChange = (event) => {
+        setSelectedOption(event.target.value);
+    };
+
     const fetchData = async () => {
         try {
-
             if (!userUid) {
                 return;
             }
@@ -32,12 +36,26 @@ export default function ScanHistory() {
             const endOfDayTimestamp = Math.floor(endOfDay.getTime() / 1000);
 
             const ref = collection(firestore, 'histories');
-            const historyQuery = query(
-                ref,
-                where('userData.uid', '==', userUid),
-                where('timestamp', '>=', startOfDayTimestamp),
-                where('timestamp', '<=', endOfDayTimestamp)
-            );
+            let historyQuery;
+
+            if (selectedOption === "0") {
+                // Option 0: Fetch all histories for the user on the selected date
+                historyQuery = query(
+                    ref,
+                    where('userData.uid', '==', userUid),
+                    where('timestamp', '>=', startOfDayTimestamp),
+                    where('timestamp', '<=', endOfDayTimestamp)
+                );
+            } else if (selectedOption === "1") {
+                // Option 1: Fetch histories for the user's reguId on the selected date
+                const userReguId = userData.reguId;
+                historyQuery = query(
+                    ref,
+                    where('userData.reguId', '==', userReguId),
+                    where('timestamp', '>=', startOfDayTimestamp),
+                    where('timestamp', '<=', endOfDayTimestamp)
+                );
+            }
 
             const historyDocs = await getDocs(historyQuery);
 
@@ -81,12 +99,12 @@ export default function ScanHistory() {
 
     useEffect(() => {
         fetchData();
-    }, [userUid, selectedDate]);
+    }, [userUid, selectedDate, selectedOption]);
 
     return (
-        <div className="max-w-2xl p-4 mx-auto">
-            <div className="flex items-center justify-between mb-4">
-                <h1 className="mb-2 text-3xl font-bold">Scan History</h1>
+        <div className="gap-y-5 grid max-w-2xl p-4 mx-auto">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold">Scan History</h1>
                 <Link to="/scan">
                     <button className="hover:bg-blue-700 px-4 py-2 text-white transition-all duration-300 ease-in-out bg-blue-500 rounded-md">
                         Scan
@@ -95,7 +113,7 @@ export default function ScanHistory() {
             </div>
             <div className="gap-y-5 flex flex-col">
                 <div className='gap-y-1 grid'>
-                    <label className="">Select Date:</label>
+                    <label className="">Pilih Tanggal:</label>
                     <DatePicker
                         selected={selectedDate}
                         onChange={handleDateChange}
@@ -104,11 +122,16 @@ export default function ScanHistory() {
                     />
                 </div>
                 {userData && userData.roleId >= 2 && (
-                    <select>
-                        <option value="0">Diri Sendiri</option>
-                        <option value="0">Satu Regu</option>
-                        <option value="0">Option Text</option>
-                    </select>
+                    <div className='gap-y-1 grid'>
+                        <label>Tampilkan Untuk</label>
+                        <select
+                            className="block w-full p-2 bg-white border rounded-md"
+                            value={selectedOption}
+                            onChange={handleSelectChange}>
+                            <option value="0">Diri Sendiri</option>
+                            <option value="1">Satu Regu</option>
+                        </select>
+                    </div>
                 )}
             </div>
             <div className='gap-y-5 grid'>
