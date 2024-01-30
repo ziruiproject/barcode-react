@@ -36,15 +36,14 @@ export default function Camera() {
                 const unixEpochTime = Math.floor(new Date().getTime() / 1000);
 
                 if (navigator.onLine) {
-                    const barcodeResultsCollection = collection(firestore, 'history');
+                    const barcodeResultsCollection = collection(firestore, 'histories');
                     try {
                         console.log(userData.reguId)
                         await addDoc(barcodeResultsCollection, {
-                            userUid,
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
                             coordinates: coordinates,
-                            reguId: userData.reguId,
+                            userData
                         });
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
@@ -55,11 +54,10 @@ export default function Camera() {
                 } else {
                     const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
                     offlineScans.push({
-                        userUid,
                         scanned: result.getText(),
                         timestamp: unixEpochTime,
                         coordinates: coordinates,
-                        reguId: userData.reguId
+                        userData
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
                     audio.play();
@@ -95,7 +93,7 @@ export default function Camera() {
         const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
 
         for (const scan of offlineScans) {
-            const barcodeResultsCollection = collection(firestore, `history`);
+            const barcodeResultsCollection = collection(firestore, `histories`);
 
             await addDoc(barcodeResultsCollection, scan)
                 .catch((error) => {

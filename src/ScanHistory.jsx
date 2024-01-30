@@ -1,89 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { collection, query, where, getDocs, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, query, where, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { firestore } from './firebase';
 import { auth } from './firebase';
 import { Link } from 'react-router-dom';
 
 export default function ScanHistory() {
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [scanHistory, setScanHistory] = useState([]);
-    const [userUid, setUserUid] = useState("");
-    const [userData, setUserData] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)).getTime());
+    const [userUid, setUserUid] = useState(null);
+    const [historyData, setHistoryData] = useState([]);
+    const [userData, setUserData] = useState(null)
 
-    const formatTimestamp = (timestamp) => {
-        const date = new Date(timestamp * 1000);
-        const options = {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Jakarta',
-        };
-
-        const formattedTime = new Intl.DateTimeFormat('en-US', options).format(date);
-        return formattedTime;
-    };
-
-    const handleDateChange = async (date) => {
-        setSelectedDate(date);
-        console.log("date changed`")
-        await fetchData();
+    const handleDateChange = (date) => {
+        setSelectedDate(new Date(date.setHours(0, 0, 0, 0)));
     };
 
     const fetchData = async () => {
         try {
-            // Check if userUid is not set or is null
+
             if (!userUid) {
-                console.error('User ID is null or not set.');
                 return;
             }
 
-            // Step 1: Get user data
-            const userQuery = query(collection(firestore, 'users'), where('uid', '==', userUid));
-            const userDocQuery = await getDocs(userQuery);
+            const startOfDay = new Date(selectedDate);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(selectedDate);
+            endOfDay.setHours(23, 59, 59, 999);
 
-            if (userDocQuery.empty) {
-                console.error('User document not found.');
-                return;
-            }
+            const startOfDayTimestamp = Math.floor(startOfDay.getTime() / 1000);
+            const endOfDayTimestamp = Math.floor(endOfDay.getTime() / 1000);
 
-            const userDocSnapshot = userDocQuery.docs[0];
-            const userData = userDocSnapshot.data();
-            const displayName = userData.displayName;
-
-            // Step 2: Get scan history for the selected date
-            const startOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-            const endOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
-
-            const scanHistoryCollection = collection(firestore, 'history');
-            const q = query(
-                scanHistoryCollection,
-                where('userUid', '==', userUid),
-                where('timestamp', '>=', startOfDay.getTime() / 1000),
-                where('timestamp', '<', endOfDay.getTime() / 1000)
+            const ref = collection(firestore, 'histories');
+            const historyQuery = query(
+                ref,
+                where('userData.uid', '==', userUid),
+                where('timestamp', '>=', startOfDayTimestamp),
+                where('timestamp', '<=', endOfDayTimestamp)
             );
 
-            const querySnapshot = await getDocs(q);
+            const historyDocs = await getDocs(historyQuery);
 
-            if (querySnapshot.empty) {
-                console.error('No scan history found for the selected date.');
-                setScanHistory([]);
-                return;
-            }
-
-            const scanHistoryData = querySnapshot.docs.map(docSnapshot => {
-                const historyData = docSnapshot.data();
-                historyData.displayName = displayName;
-                return historyData;
-            });
-
-            scanHistoryData.sort((a, b) => b.timestamp - a.timestamp);
-
-            setScanHistory(scanHistoryData);
+            setHistoryData(historyDocs.docs.map(docSnapshot => docSnapshot.data()));
         } catch (error) {
-            console.error('Error fetching scan history:', error.message);
+            console.error('Error fetching history data:', error);
         }
     };
 
@@ -94,9 +54,9 @@ export default function ScanHistory() {
                 return;
             }
 
-            const userUid = user.uid;
+            setUserUid(user.uid);
 
-            const userQuery = query(collection(firestore, 'users'), where('uid', '==', userUid));
+            const userQuery = query(collection(firestore, 'users'), where('uid', '==', user.uid));
             const userDocQuery = await getDocs(userQuery);
 
             if (userDocQuery.docs.length > 0) {
@@ -112,26 +72,16 @@ export default function ScanHistory() {
             } else {
                 console.error('No user document found for userUid:', userUid);
             }
+
+            await fetchData(); // Fetch data after setting userUid
         });
 
-        // Perform fetchData when userUid changes
-        const fetchDataIfUserUidSet = async () => {
-            if (userUid) {
-                console.log(userUid);
-                await fetchData();
-            }
-        };
+        return () => unsubscribe();
+    }, []);
 
-        fetchDataIfUserUidSet();
-
-        return () => unsubscribe;
-    }, [userUid, selectedDate]); // Add userUid as a dependency for the useEffect
-
-
-    const formatDate = (date) => {
-        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        return date.toLocaleDateString('id-ID', options);
-    };
+    useEffect(() => {
+        fetchData();
+    }, [userUid, selectedDate]);
 
     return (
         <div className="max-w-2xl p-4 mx-auto">
@@ -143,9 +93,9 @@ export default function ScanHistory() {
                     </button>
                 </Link>
             </div>
-            <div className="mb-4">
-                <div>
-                    <label className="mr-2">Select Date:</label>
+            <div className="gap-y-5 flex flex-col">
+                <div className='gap-y-1 grid'>
+                    <label className="">Select Date:</label>
                     <DatePicker
                         selected={selectedDate}
                         onChange={handleDateChange}
@@ -153,49 +103,36 @@ export default function ScanHistory() {
                         dateFormat="dd/MM/yyyy"
                     />
                 </div>
-                <div>
-                    <label className="mr-2">Select Date:</label>
-                    {userData.roleId === 2 && (
-                        <select>
-                            <option value=""></option>
-                            {/* Other options */}
-                        </select>
-                    )}
-                </div>
-
-            </div>
-            <div>
-                <p className="mb-2">
-                    Scan history on {formatDate(selectedDate)}
-                </p>
-                {scanHistory.length === 0 ? (
-                    <p className="text-gray-500">No data</p>
-                ) : (
-                    <ul>
-                        {scanHistory.map((scan, index) => (
-                            <li key={index} className="p-4 mb-4 bg-gray-100 border rounded-md">
-                                <div className="mb-2">
-                                    <span className="font-bold">User:</span> {scan.displayName}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-bold">Regu:</span> {scan.reguId}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-bold">Data:</span> {scan.scanned}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-bold">Latitude:</span> {scan.coordinates?.latitude || 'N/A'}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-bold">Longitude:</span> {scan.coordinates?.longitude || 'N/A'}
-                                </div>
-                                <div>
-                                    <span className="font-bold">Waktu:</span> {formatTimestamp(scan.timestamp)} WIB
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                {userData && userData.roleId >= 2 && (
+                    <select>
+                        <option value="0">Diri Sendiri</option>
+                        <option value="0">Satu Regu</option>
+                        <option value="0">Option Text</option>
+                    </select>
                 )}
+            </div>
+            <div className='gap-y-5 grid'>
+                {historyData.map((historyItem, index) => (
+                    <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
+                        <div className='flex justify-between'>
+                            <span className='text-xl font-medium'>{historyItem.userData.displayName}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Regu {historyItem.userData.reguId}</span>
+                        </div>
+                        <span className='text-xl'>{historyItem.scanned}</span>
+                        <div className='flex justify-between'>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{new Date(historyItem.timestamp * 1000).toLocaleTimeString('en-US', { hour12: false })} WIB</span>
+                            <span className='w-fit gap-x-1 flex px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>
+                                <span className=''>
+                                    {historyItem.coordinates.latitude}
+                                </span>,
+                                <span className=''>
+                                    {historyItem.coordinates.longitude}
+                                </span>
+                            </span>
+
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
