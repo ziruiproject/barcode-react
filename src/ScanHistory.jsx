@@ -10,6 +10,7 @@ export default function ScanHistory() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [scanHistory, setScanHistory] = useState([]);
     const [userUid, setUserUid] = useState("");
+    const [userData, setUserData] = useState(null);
 
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp * 1000);
@@ -27,18 +28,36 @@ export default function ScanHistory() {
 
     const handleDateChange = async (date) => {
         setSelectedDate(date);
+        console.log("date changed`")
+        await fetchData();
     };
 
     const fetchData = async () => {
         try {
-            const scanHistoryCollection = collection(firestore, 'history');
-            const startOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-            const endOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
-
+            // Check if userUid is not set or is null
             if (!userUid) {
+                console.error('User ID is null or not set.');
                 return;
             }
 
+            // Step 1: Get user data
+            const userQuery = query(collection(firestore, 'users'), where('uid', '==', userUid));
+            const userDocQuery = await getDocs(userQuery);
+
+            if (userDocQuery.empty) {
+                console.error('User document not found.');
+                return;
+            }
+
+            const userDocSnapshot = userDocQuery.docs[0];
+            const userData = userDocSnapshot.data();
+            const displayName = userData.displayName;
+
+            // Step 2: Get scan history for the selected date
+            const startOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+            const endOfDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
+
+            const scanHistoryCollection = collection(firestore, 'history');
             const q = query(
                 scanHistoryCollection,
                 where('userUid', '==', userUid),
@@ -47,48 +66,67 @@ export default function ScanHistory() {
             );
 
             const querySnapshot = await getDocs(q);
-            const scanHistoryData = [];
 
-            for (const docSnapshot of querySnapshot.docs) {
-                const historyData = docSnapshot.data();
-                const userUid = historyData.userUid;
-
-                const userDocRef = doc(collection(firestore, 'users'), userUid);
-                const userDocSnapshot = await getDoc(userDocRef);
-
-                if (userDocSnapshot.exists()) {
-                    const userData = userDocSnapshot.data();
-                    const displayName = userData.name;
-
-                    historyData.displayName = displayName;
-                }
-
-                scanHistoryData.push(historyData);
+            if (querySnapshot.empty) {
+                console.error('No scan history found for the selected date.');
+                setScanHistory([]);
+                return;
             }
+
+            const scanHistoryData = querySnapshot.docs.map(docSnapshot => {
+                const historyData = docSnapshot.data();
+                historyData.displayName = displayName;
+                return historyData;
+            });
 
             scanHistoryData.sort((a, b) => b.timestamp - a.timestamp);
 
             setScanHistory(scanHistoryData);
         } catch (error) {
-            console.error('Error fetching scan history:', error);
+            console.error('Error fetching scan history:', error.message);
         }
     };
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setUserUid(user.uid);
-            } else {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (!user) {
                 window.location.replace('/login');
+                return;
+            }
+
+            const userUid = user.uid;
+
+            const userQuery = query(collection(firestore, 'users'), where('uid', '==', userUid));
+            const userDocQuery = await getDocs(userQuery);
+
+            if (userDocQuery.docs.length > 0) {
+                const userDocSnapshot = userDocQuery.docs[0];
+
+                if (userDocSnapshot.exists()) {
+                    const userData = userDocSnapshot.data();
+                    console.log('userData:', userData);
+                    setUserData(userData);
+                } else {
+                    console.error('User document is empty for userUid:', userUid);
+                }
+            } else {
+                console.error('No user document found for userUid:', userUid);
             }
         });
 
-        return () => unsubscribe;
-    }, []);
+        // Perform fetchData when userUid changes
+        const fetchDataIfUserUidSet = async () => {
+            if (userUid) {
+                console.log(userUid);
+                await fetchData();
+            }
+        };
 
-    useEffect(() => {
-        fetchData();
-    }, [selectedDate, userUid]);
+        fetchDataIfUserUidSet();
+
+        return () => unsubscribe;
+    }, [userUid, selectedDate]); // Add userUid as a dependency for the useEffect
+
 
     const formatDate = (date) => {
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
@@ -106,13 +144,25 @@ export default function ScanHistory() {
                 </Link>
             </div>
             <div className="mb-4">
-                <label className="mr-2">Select Date:</label>
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    className="p-2 border rounded-md"
-                    dateFormat="dd/MM/yyyy"
-                />
+                <div>
+                    <label className="mr-2">Select Date:</label>
+                    <DatePicker
+                        selected={selectedDate}
+                        onChange={handleDateChange}
+                        className="p-2 border rounded-md"
+                        dateFormat="dd/MM/yyyy"
+                    />
+                </div>
+                <div>
+                    <label className="mr-2">Select Date:</label>
+                    {userData.roleId === 2 && (
+                        <select>
+                            <option value=""></option>
+                            {/* Other options */}
+                        </select>
+                    )}
+                </div>
+
             </div>
             <div>
                 <p className="mb-2">
@@ -126,6 +176,9 @@ export default function ScanHistory() {
                             <li key={index} className="p-4 mb-4 bg-gray-100 border rounded-md">
                                 <div className="mb-2">
                                     <span className="font-bold">User:</span> {scan.displayName}
+                                </div>
+                                <div className="mb-2">
+                                    <span className="font-bold">Regu:</span> {scan.reguId}
                                 </div>
                                 <div className="mb-2">
                                     <span className="font-bold">Data:</span> {scan.scanned}

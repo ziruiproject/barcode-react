@@ -27,6 +27,7 @@ export default function Login() {
                 setError('Username atau Password Salah!');
             }
         } catch (error) {
+            console.log(error)
             setError('Username atau Password Salah!');
         }
     };
