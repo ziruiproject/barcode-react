@@ -55,6 +55,15 @@ export default function ScanHistory() {
                     where('timestamp', '>=', startOfDayTimestamp),
                     where('timestamp', '<=', endOfDayTimestamp)
                 );
+            } else if (selectedOption === "2") {
+                // Option 1: Fetch histories for the user's reguId on the selected date
+                const userAreaId = userData.areaId;
+                historyQuery = query(
+                    ref,
+                    where('userData.areaId', '==', userAreaId),
+                    where('timestamp', '>=', startOfDayTimestamp),
+                    where('timestamp', '<=', endOfDayTimestamp)
+                );
             }
 
             const historyDocs = await getDocs(historyQuery);
@@ -82,7 +91,6 @@ export default function ScanHistory() {
 
                 if (userDocSnapshot.exists()) {
                     const userData = userDocSnapshot.data();
-                    console.log('userData:', userData);
                     setUserData(userData);
                 } else {
                     console.error('User document is empty for userUid:', userUid);
@@ -130,6 +138,9 @@ export default function ScanHistory() {
                             onChange={handleSelectChange}>
                             <option value="0">Diri Sendiri</option>
                             <option value="1">Satu Regu</option>
+                            {userData && userData.roleId > 2 && (
+                                <option value="2">Satu Area</option>
+                            )}
                         </select>
                     </div>
                 )}
@@ -137,9 +148,10 @@ export default function ScanHistory() {
             <div className='gap-y-5 grid'>
                 {historyData.map((historyItem, index) => (
                     <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
-                        <div className='flex justify-between'>
-                            <span className='text-xl font-medium'>{historyItem.userData.displayName}</span>
+                        <div className='gap-x-2 flex'>
+                            <span className='mr-auto text-xl font-medium'>{historyItem.userData.displayName}</span>
                             <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Regu {historyItem.userData.reguId}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Area {historyItem.userData.areaId}</span>
                         </div>
                         <span className='text-xl'>{historyItem.scanned}</span>
                         <div className='flex justify-between'>
