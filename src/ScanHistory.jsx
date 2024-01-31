@@ -154,8 +154,8 @@ export default function ScanHistory() {
                 'Nama': userData.displayName,
                 'Tanggal': new Date(doc.timestamp * 1000).toLocaleDateString(),
                 'Jam': new Date(doc.timestamp * 1000).toLocaleTimeString('en-US', { hour12: false }),
-                'Lokasi koordinat': `${doc.coordinates?.latitude || 'NaN'}, ${doc.coordinates?.longitude || 'NaN'}`,
-                'Regu': reguOptions.find(regu => regu.id === userData.reguId)?.name,
+                'Koordinat': `${doc.coordinates?.latitude || 'NaN'}, ${doc.coordinates?.longitude || 'NaN'}`,
+                'Lokasi': reguOptions.find(regu => regu.id === userData.reguId)?.name,
                 'Area': areaOptions.find(area => area.id === userData.areaId)?.name
             };
         });
@@ -341,8 +341,8 @@ export default function ScanHistory() {
                 {historyData.map((historyItem, index) => (
                     <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
                         <div className=' gap-x-2 flex'>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Regu {reguOptions.find(regu => regu.id === historyItem.userData.reguId)?.name}</span>
                             <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{areaOptions.find(area => area.id === historyItem.userData.areaId)?.name}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{reguOptions.find(regu => regu.id === historyItem.userData.reguId)?.name}</span>
                         </div>
                         <span className='mr-auto text-xl font-medium'>{historyItem.userData.displayName}</span>
                         <span className='text-xl'>{historyItem.scanned}</span>

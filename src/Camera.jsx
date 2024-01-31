@@ -29,16 +29,13 @@ export default function Camera() {
             const audio = new Audio(successSound);
 
             if (userData && userData.uid) {
-                console.log("hi")
                 const userUid = userData.uid;
-                console.log(userUid)
 
                 const unixEpochTime = Math.floor(new Date().getTime() / 1000);
 
                 if (navigator.onLine) {
                     const barcodeResultsCollection = collection(firestore, 'histories');
                     try {
-                        console.log(userData.reguId)
                         await addDoc(barcodeResultsCollection, {
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
@@ -81,7 +78,6 @@ export default function Camera() {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                 });
-                console.log(coordinates)
             },
             (error) => {
                 console.error('Error getting location:', error.message);
@@ -155,7 +151,6 @@ export default function Camera() {
 
                 if (userDocSnapshot.exists()) {
                     const userData = userDocSnapshot.data();
-                    console.log('userData:', userData);
                     setUserData(userData);
                 } else {
                     console.error('User document is empty for userUid:', userUid);
