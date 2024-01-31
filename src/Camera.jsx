@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useZxing } from "react-zxing";
 import { auth } from "./firebase";
 import { firestore } from "./firebase";
-import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import successSound from './success.mp3'
 
 export default function Camera() {
@@ -12,14 +12,13 @@ export default function Camera() {
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [coordinates, setCoordinates] = useState(null);
     const [offline, setOffline] = useState(!navigator.onLine);
+    const [userData, setUserData] = useState(null);
 
     const offlineScansKey = 'offlineScans';
-
 
     const { ref } = useZxing({
         readers: [],
         async onDecodeResult(result) {
-            console.log(coordinates)
             if (scanning) {
                 return;
             }
@@ -29,21 +28,22 @@ export default function Camera() {
 
             const audio = new Audio(successSound);
 
-            const user = auth.currentUser;
+            if (userData && userData.uid) {
+                console.log("hi")
+                const userUid = userData.uid;
+                console.log(userUid)
 
-            if (user && user.uid) {
-                const userUid = user.uid;
                 const unixEpochTime = Math.floor(new Date().getTime() / 1000);
 
                 if (navigator.onLine) {
-                    const barcodeResultsCollection = collection(firestore, 'history');
+                    const barcodeResultsCollection = collection(firestore, 'histories');
                     try {
-                        console.log(coordinates)
+                        console.log(userData.reguId)
                         await addDoc(barcodeResultsCollection, {
-                            userUid,
                             scanned: result.getText(),
                             timestamp: unixEpochTime,
                             coordinates: coordinates,
+                            userData
                         });
                     } catch (error) {
                         console.error('Error adding result to Firestore: ', error);
@@ -54,10 +54,10 @@ export default function Camera() {
                 } else {
                     const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
                     offlineScans.push({
-                        userUid,
                         scanned: result.getText(),
                         timestamp: unixEpochTime,
                         coordinates: coordinates,
+                        userData
                     });
                     localStorage.setItem(offlineScansKey, JSON.stringify(offlineScans));
                     audio.play();
@@ -93,7 +93,7 @@ export default function Camera() {
         const offlineScans = JSON.parse(localStorage.getItem(offlineScansKey)) || [];
 
         for (const scan of offlineScans) {
-            const barcodeResultsCollection = collection(firestore, `history`);
+            const barcodeResultsCollection = collection(firestore, `histories`);
 
             await addDoc(barcodeResultsCollection, scan)
                 .catch((error) => {
@@ -139,9 +139,29 @@ export default function Camera() {
     // Check User Auth State
     useEffect(() => {
         requestLocationAccess();
-        const unsubscribe = auth.onAuthStateChanged((user) => {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.replace('/login');
+                return;
+            }
+
+            const userUid = user.uid;
+
+            const userQuery = query(collection(firestore, 'users'), where('uid', '==', userUid));
+            const userDocQuery = await getDocs(userQuery);
+
+            if (userDocQuery.docs.length > 0) {
+                const userDocSnapshot = userDocQuery.docs[0];
+
+                if (userDocSnapshot.exists()) {
+                    const userData = userDocSnapshot.data();
+                    console.log('userData:', userData);
+                    setUserData(userData);
+                } else {
+                    console.error('User document is empty for userUid:', userUid);
+                }
+            } else {
+                console.error('No user document found for userUid:', userUid);
             }
         });
 
