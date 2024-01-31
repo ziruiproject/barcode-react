@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { collection, query, where, getDocs, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { collection, query, where, getDocs, getDoc, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import { firestore } from './firebase';
 import { auth } from './firebase';
 import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx'
 
 export default function ScanHistory() {
     const [selectedDate, setSelectedDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)).getTime());
@@ -72,7 +73,8 @@ export default function ScanHistory() {
                     ref,
                     where('userData.uid', '==', userUid),
                     where('timestamp', '>=', startOfDayTimestamp),
-                    where('timestamp', '<=', endOfDayTimestamp)
+                    where('timestamp', '<=', endOfDayTimestamp),
+                    orderBy("timestamp", "desc")
                 );
             } else if (selectedOption === "regu") {
                 // Option 1: Fetch histories for the user's reguId on the selected date
@@ -81,7 +83,8 @@ export default function ScanHistory() {
                     ref,
                     where('userData.reguId', '==', userReguId),
                     where('timestamp', '>=', startOfDayTimestamp),
-                    where('timestamp', '<=', endOfDayTimestamp)
+                    where('timestamp', '<=', endOfDayTimestamp),
+                    orderBy("timestamp", "desc")
                 );
             } else if (selectedOption === "area") {
                 // Option 1: Fetch histories for the user's reguId on the selected date
@@ -90,7 +93,8 @@ export default function ScanHistory() {
                     ref,
                     where('userData.areaId', '==', userAreaId),
                     where('timestamp', '>=', startOfDayTimestamp),
-                    where('timestamp', '<=', endOfDayTimestamp)
+                    where('timestamp', '<=', endOfDayTimestamp),
+                    orderBy("timestamp", "desc")
                 );
             } else if (selectedOption === "admin") {
                 // Option 1: Fetch histories for the user's reguId on the selected date
@@ -98,21 +102,24 @@ export default function ScanHistory() {
                     historyQuery = query(
                         ref,
                         where('timestamp', '>=', startOfDayTimestamp),
-                        where('timestamp', '<=', endOfDayTimestamp)
+                        where('timestamp', '<=', endOfDayTimestamp),
+                        orderBy("timestamp", "desc")
                     );
                 } else if (selectedRegu === "semua") {
                     historyQuery = query(
                         ref,
                         where('userData.areaId', '==', selectedArea),
                         where('timestamp', '>=', startOfDayTimestamp),
-                        where('timestamp', '<=', endOfDayTimestamp)
+                        where('timestamp', '<=', endOfDayTimestamp),
+                        orderBy("timestamp", "desc")
                     );
                 } else if (selectedArea === "semua") {
                     historyQuery = query(
                         ref,
                         where('userData.reguId', '==', selectedRegu),
                         where('timestamp', '>=', startOfDayTimestamp),
-                        where('timestamp', '<=', endOfDayTimestamp)
+                        where('timestamp', '<=', endOfDayTimestamp),
+                        orderBy("timestamp", "desc")
                     );
                 } else {
                     historyQuery = query(
@@ -120,7 +127,8 @@ export default function ScanHistory() {
                         where('userData.reguId', '==', selectedRegu),
                         where('userData.areaId', '==', selectedArea),
                         where('timestamp', '>=', startOfDayTimestamp),
-                        where('timestamp', '<=', endOfDayTimestamp)
+                        where('timestamp', '<=', endOfDayTimestamp),
+                        orderBy("timestamp", "desc")
                     );
                 }
             }
@@ -133,9 +141,57 @@ export default function ScanHistory() {
         }
     };
 
+    const downloadExcel = () => {
+        if (historyData.length === 0) {
+            console.warn('No data to download');
+            return;
+        }
+
+        const dataForTable = historyData.map((doc) => {
+            const userData = doc.userData;
+
+            return {
+                'Nama': userData.displayName,
+                'Tanggal': new Date(doc.timestamp * 1000).toLocaleDateString(),
+                'Jam': new Date(doc.timestamp * 1000).toLocaleTimeString('en-US', { hour12: false }),
+                'Lokasi koordinat': `${doc.coordinates?.latitude || 'NaN'}, ${doc.coordinates?.longitude || 'NaN'}`,
+                'Regu': reguOptions.find(regu => regu.id === userData.reguId)?.name,
+                'Area': areaOptions.find(area => area.id === userData.areaId)?.name
+            };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataForTable);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'ScanHistory');
+
+        // Convert the workbook to an array buffer
+        const arrayBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+        // Convert the array buffer to a Blob
+        const blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        // Create a download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ScanHistory.xlsx';
+
+        // Trigger a click on the link to start the download
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Revoke the object URL to free up resources
+        URL.revokeObjectURL(url);
+    };
+
     useEffect(() => {
         const fetchReguOptions = async () => {
-            const reguQuery = query(collection(firestore, 'regu'));
+            const reguQuery = query(
+                collection(firestore, 'regu'),
+                orderBy('name')
+            );
+
             const reguDocs = await getDocs(reguQuery);
 
             const reguData = reguDocs.docs.map(docSnapshot => docSnapshot.data());
@@ -144,7 +200,11 @@ export default function ScanHistory() {
         };
 
         const fetchAreaOptions = async () => {
-            const areaQuery = query(collection(firestore, 'area'));
+            const areaQuery = query(
+                collection(firestore, 'area'),
+                orderBy("name")
+            );
+
             const areaDocs = await getDocs(areaQuery);
 
             const areaData = areaDocs.docs.map(docSnapshot => docSnapshot.data());
@@ -252,7 +312,7 @@ export default function ScanHistory() {
                                 </option>
                                 {reguOptions.map(regu => (
                                     <option key={regu.id} value={regu.id}>
-                                        {regu.id}
+                                        {regu.name}
                                     </option>
                                 ))}
                             </select>
@@ -268,11 +328,12 @@ export default function ScanHistory() {
                                 </option>
                                 {areaOptions.map(area => (
                                     <option key={area.id} value={area.id}>
-                                        {area.id}
+                                        {area.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
+                        <button className='py-3 font-medium text-white bg-blue-500 rounded-lg' onClick={downloadExcel}>Download Excel</button>
                     </>
                 )}
             </div>
@@ -280,8 +341,8 @@ export default function ScanHistory() {
                 {historyData.map((historyItem, index) => (
                     <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
                         <div className=' gap-x-2 flex'>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Regu {historyItem.userData.reguId}</span>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Area {historyItem.userData.areaId}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>Regu {reguOptions.find(regu => regu.id === historyItem.userData.reguId)?.name}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{areaOptions.find(area => area.id === historyItem.userData.areaId)?.name}</span>
                         </div>
                         <span className='mr-auto text-xl font-medium'>{historyItem.userData.displayName}</span>
                         <span className='text-xl'>{historyItem.scanned}</span>
