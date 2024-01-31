@@ -16,9 +16,15 @@ export default function ScanHistory() {
     const [userData, setUserData] = useState(null)
     const [reguOptions, setReguOptions] = useState([]);
     const [areaOptions, setAreaOptions] = useState([]);
+    const [endDate, setEndDate] = useState(new Date(new Date().setHours(23, 59, 59, 999)).getTime());
+    const [dateError, setDateError] = useState(null);
 
     const handleDateChange = (date) => {
         setSelectedDate(new Date(date.setHours(0, 0, 0, 0)));
+    };
+
+    const handleEndDateChange = (date) => {
+        setEndDate(new Date(date.setHours(23, 59, 59, 999)));
     };
 
     const handleSelectChange = (event) => {
@@ -43,8 +49,16 @@ export default function ScanHistory() {
 
             const startOfDay = new Date(selectedDate);
             startOfDay.setHours(0, 0, 0, 0);
-            const endOfDay = new Date(selectedDate);
+
+            const endOfDay = new Date(endDate);
             endOfDay.setHours(23, 59, 59, 999);
+
+            if (endOfDay < startOfDay) {
+                setDateError("End date must be equal to or after the start date");
+                return;
+            } else {
+                setDateError(null);
+            }
 
             const startOfDayTimestamp = Math.floor(startOfDay.getTime() / 1000);
             const endOfDayTimestamp = Math.floor(endOfDay.getTime() / 1000);
@@ -175,7 +189,7 @@ export default function ScanHistory() {
 
     useEffect(() => {
         fetchData();
-    }, [userUid, selectedDate, selectedOption, selectedArea, selectedRegu]);
+    }, [userUid, selectedDate, selectedOption, selectedArea, selectedRegu, endDate]);
 
     return (
         <div className="gap-y-5 grid max-w-2xl p-4 mx-auto">
@@ -189,7 +203,7 @@ export default function ScanHistory() {
             </div>
             <div className="gap-y-5 flex flex-col">
                 <div className='gap-y-1 grid'>
-                    <label className="">Pilih Tanggal:</label>
+                    <label className="">Pilih Tanggal Awal:</label>
                     <DatePicker
                         selected={selectedDate}
                         onChange={handleDateChange}
@@ -197,6 +211,16 @@ export default function ScanHistory() {
                         dateFormat="dd/MM/yyyy"
                     />
                 </div>
+                <div className="gap-y-1 grid">
+                    <label className="">Pilih Tanggal Akhir:</label>
+                    <DatePicker
+                        selected={endDate}
+                        onChange={handleEndDateChange}
+                        className="p-2 border rounded-md"
+                        dateFormat="dd/MM/yyyy"
+                    />
+                </div>
+                {dateError && <p className="text-red-500">{dateError}</p>}
                 {userData && userData.roleId >= 2 && (
                     <div className='gap-y-1 grid'>
                         <label>Tampilkan Untuk</label>
