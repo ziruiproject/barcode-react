@@ -33,12 +33,10 @@ export default function ScanHistory() {
     };
 
     const handleReguChange = (event) => {
-        console.log(event.target.value)
         setSelectedRegu(event.target.value);
     };
 
     const handleAreaChange = (event) => {
-        console.log(event.target.value)
         setSelectedArea(event.target.value);
     };
 
@@ -341,8 +339,8 @@ export default function ScanHistory() {
                 {historyData.map((historyItem, index) => (
                     <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
                         <div className=' gap-x-2 flex'>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{areaOptions.find(area => area.id === historyItem.userData.areaId)?.name}</span>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{reguOptions.find(regu => regu.id === historyItem.userData.reguId)?.name}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{areaOptions.find(area => area.id == historyItem.userData.areaId)?.name}</span>
+                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{reguOptions.find(regu => regu.id == historyItem.userData.reguId)?.name}</span>
                         </div>
                         <span className='mr-auto text-xl font-medium'>{historyItem.userData.displayName}</span>
                         <span className='text-xl'>{historyItem.scanned}</span>
