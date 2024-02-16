@@ -113,7 +113,7 @@ export default function EventHistory() {
                             <p>Judul: {report.title}</p>
                             <p>Lokasi: {report.location}</p>
                             <p>Deskripsi: {report.description}</p>
-                            <p>Waktu: {report.timestamp.toDate().toLocaleString()}</p>
+                            <p>Waktu: {new Date(report.timestamp * 1000).toLocaleString()}</p>
                             <div className="mt-4">
                                 <p className="mb-2 font-bold">Gambar:</p>
                                 <ul className="grid grid-cols-2 gap-4">
