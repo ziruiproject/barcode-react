@@ -76,7 +76,7 @@ export default function Report() {
                     id: photo.id,
                     url: photo.url,
                 })),
-                timestamp: serverTimestamp(),
+                timestamp: Math.floor(new Date().getTime() / 1000),
             });
             window.location.replace('/history/kejadian');
         } catch (error) {
