@@ -3,12 +3,16 @@ import {
     collection,
     addDoc,
     serverTimestamp,
+    doc,
+    getDocs,
+    query,
+    where
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 import {
     getStorage,
     ref,
     uploadBytes,
-    getDownloadURL,
+    getDownloadURL
 } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
 import { firestore } from './firebase'; // Import your Firebase configuration
 import { auth } from './firebase';
@@ -65,20 +69,25 @@ export default function Report() {
                 return;
             }
 
-            // Add a new document with the report data and user ID
-            await addDoc(reportsCollection, {
-                userId: userId,
-                date: reportDate,
-                title: reportTitle,
-                location: reportLocation,
-                description: reportDescription,
-                photos: reportPhotos.map((photo) => ({
-                    id: photo.id,
-                    url: photo.url,
-                })),
-                timestamp: Math.floor(new Date().getTime() / 1000),
-            });
-            window.location.replace('/history/kejadian');
+            const userDocRef = query(collection(firestore, 'users'), where('uid', '==', userId));
+            const userDocSnapshot = await getDocs(userDocRef);
+
+            if (userDocSnapshot.docs[0].exists()) {
+                // Add a new document with the report data and user ID
+                await addDoc(reportsCollection, {
+                    userData: userDocSnapshot.docs[0].data(),
+                    date: reportDate,
+                    title: reportTitle,
+                    location: reportLocation,
+                    description: reportDescription,
+                    photos: reportPhotos.map((photo) => ({
+                        id: photo.id,
+                        url: photo.url,
+                    })),
+                    timestamp: Math.floor(new Date().getTime() / 1000),
+                });
+                window.location.replace('/history/kejadian');
+            }
         } catch (error) {
             console.error('Error adding report:', error);
         }

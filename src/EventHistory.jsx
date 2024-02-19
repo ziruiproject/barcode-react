@@ -21,14 +21,14 @@ export default function EventHistory() {
 
                 for (const docSnapshot of querySnapshot.docs) {
                     const reportData = docSnapshot.data();
-                    const userUid = reportData.userId;
+                    const userUid = reportData.userData.uid;
 
                     // Fetch user data using userUid from Firebase Authentication
-                    const userDocRef = doc(collection(firestore, 'users'), userUid);
-                    const userDocSnapshot = await getDoc(userDocRef);
+                    const userDocRef = query(collection(firestore, 'users'), where('uid', '==', userUid));
+                    const userDocSnapshot = await getDocs(userDocRef);
 
-                    if (userDocSnapshot.exists()) {
-                        const userData = userDocSnapshot.data();
+                    if (userDocSnapshot.docs[0].exists()) {
+                        const userData = userDocSnapshot.docs[0].data();
                         const displayName = userData.displayName;
 
                         // Add displayName to reportData
