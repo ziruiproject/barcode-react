@@ -345,7 +345,7 @@ export default function ScanHistory() {
                         <span className='mr-auto text-xl font-medium'>{historyItem.userData.displayName}</span>
                         <span className='text-xl'>{historyItem.scanned}</span>
                         <div className='flex justify-between'>
-                            <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{new Date(historyItem.timestamp * 1000).toLocaleTimeString('en-US', { hour12: false })} WIB</span>
+                        <span className='w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>{new Date(historyItem.timestamp * 1000).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })} WIB</span>
                             <span className='w-fit gap-x-1 flex px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full'>
                                 <span className=''>
                                     {historyItem.coordinates?.latitude ? historyItem.coordinates?.latitude : "NaN"}
