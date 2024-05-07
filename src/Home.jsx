@@ -34,7 +34,7 @@ export default function Home() {
                     Scan History
                 </li>
             </Link>
-            <Link to="/lapor">
+            {/* <Link to="/lapor">
                 <li className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">
                     Lapor Kejadian
                 </li>
@@ -43,7 +43,7 @@ export default function Home() {
                 <li className="hover:bg-blue-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-blue-600 rounded">
                     History Kejadian
                 </li>
-            </Link>
+            </Link> */}
             <Link to="/login">
                 <button onClick={Logout} className="hover:bg-red-700 flex items-center justify-center w-64 h-12 px-6 mt-8 text-sm font-semibold text-blue-100 bg-red-600 rounded">
                     Logout
