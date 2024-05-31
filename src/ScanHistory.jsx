@@ -122,13 +122,32 @@ export default function ScanHistory() {
       if (!q) return;
 
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map((doc) => doc.data());
+      const historyData = querySnapshot.docs.map((doc) => doc.data());
 
-      console.log(data);
+      // Fetch building room data for each history record
+      const buildingRoomPromises = historyData.map(async (history) => {
+        const buildingRoomQuery = query(
+          collection(firestore, "building_room"),
+          where("barcode", "==", history.scanned)
+        );
+        const buildingRoomSnapshot = await getDocs(buildingRoomQuery);
+        const buildingRoomData = buildingRoomSnapshot.docs.map((doc) =>
+          doc.data()
+        );
+
+        return {
+          ...history,
+          buildingRoom: buildingRoomData[0] || null, // assuming there's only one match per barcode
+        };
+      });
+
+      const historiesWithBuildingRooms = await Promise.all(
+        buildingRoomPromises
+      );
 
       // Generate Excel file with fetched data
       const worksheet = XLSX.utils.json_to_sheet(
-        data.map((dataItem) => ({
+        historiesWithBuildingRooms.map((dataItem) => ({
           nama: dataItem.userData.displayName,
           barcode: dataItem.scanned,
           area: areaOptions.find((area) => area.id == dataItem.userData.areaId)
@@ -149,6 +168,7 @@ export default function ScanHistory() {
               hour12: false,
             }
           ),
+          buildingRoomName: dataItem.buildingRoom?.name, // Add building room name here
         }))
       );
 
@@ -241,16 +261,35 @@ export default function ScanHistory() {
   ]);
 
   const fetchHistoryData = useCallback(async () => {
-    const q = historyQuery();
+    const q = historyQuery(); // Your query to get the histories
     if (!q) return;
 
     try {
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map((doc) => doc.data());
+      const historyData = querySnapshot.docs.map((doc) => doc.data());
 
-      setHistoryData(data);
+      const buildingRoomPromises = historyData.map(async (history) => {
+        const buildingRoomQuery = query(
+          collection(firestore, "building_room"),
+          where("barcode", "==", history.scanned)
+        );
+        const buildingRoomSnapshot = await getDocs(buildingRoomQuery);
+        const buildingRoomData = buildingRoomSnapshot.docs.map((doc) =>
+          doc.data()
+        );
 
-      console.log("History data fetched:", data);
+        return {
+          ...history,
+          buildingRoom: buildingRoomData[0] || null, // assuming there's only one match per barcode
+        };
+      });
+
+      const historiesWithBuildingRooms = await Promise.all(
+        buildingRoomPromises
+      );
+      setHistoryData(historiesWithBuildingRooms);
+
+      console.log("History data fetched:", historiesWithBuildingRooms);
     } catch (error) {
       console.error(error);
     }
@@ -433,8 +472,8 @@ export default function ScanHistory() {
           <p className="text-red-500">Data tidak ada</p>
         ) : (
           historyData.map((historyItem, index) => (
-            <div key={index} className=" rounded-xl gap-y-5 grid p-4 shadow-md">
-              <div className=" gap-x-2 flex">
+            <div key={index} className="rounded-xl gap-y-5 grid p-4 shadow-md">
+              <div className="gap-x-2 flex">
                 <span className="w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
                   {
                     areaOptions.find(
@@ -454,7 +493,12 @@ export default function ScanHistory() {
                 {historyItem.userData.displayName}
               </span>
               <span className="text-xl">{historyItem.scanned}</span>
-              <div className="flex  flex-col gap-y-3 justify-between">
+              {historyItem.buildingRoom && (
+                <span className="text-lg text-gray-700">
+                  {historyItem.buildingRoom.name}
+                </span>
+              )}
+              <div className="flex flex-col gap-y-3 justify-between">
                 <span className="w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
                   {new Date(historyItem.timestamp * 1000).toLocaleDateString(
                     "id-ID",
@@ -471,13 +515,13 @@ export default function ScanHistory() {
                   WIB
                 </span>
                 <span className="w-fit gap-x-1 flex px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
-                  <span className="">
+                  <span>
                     {historyItem.coordinates?.latitude
                       ? historyItem.coordinates?.latitude
                       : "NaN"}
                   </span>
                   ,
-                  <span className="">
+                  <span>
                     {historyItem.coordinates?.longitude
                       ? historyItem.coordinates?.longitude
                       : "NaN"}
