@@ -23,7 +23,6 @@ export default function ScanHistory() {
   const [selectedArea, setSelectedArea] = useState("semua");
   const [userUid, setUserUid] = useState(null);
   const [historyData, setHistoryData] = useState([]);
-  const [latestScanned, setLatestScanned] = useState(null);
   const [userData, setUserData] = useState(null);
   const [reguOptions, setReguOptions] = useState([]);
   const [areaOptions, setAreaOptions] = useState([]);
@@ -58,24 +57,6 @@ export default function ScanHistory() {
   const handleAreaChange = (event) => {
     setSelectedArea(event.target.value);
   };
-
-  // Function to fetch latest scanned item
-  const fetchLatestScanned = useCallback(async () => {
-    console.log("halo ngabers");
-    try {
-      const q = query(
-        collection(firestore, "histories"),
-        where("userData.uid", "==", userUid),
-        orderBy("timestamp", "desc"),
-        limit(1)
-      );
-      const querySnapshot = await getDocs(q);
-      const latestData = querySnapshot.docs.map((doc) => doc.data());
-      setLatestScanned(latestData[0]);
-    } catch (error) {
-      console.error("Error fetching latest scanned item:", error);
-    }
-  }, [userUid]);
 
   const downloadExcelQuery = useCallback(() => {
     if (!userData) return null;
@@ -316,10 +297,6 @@ export default function ScanHistory() {
   }, [areaQuery]);
 
   useEffect(() => {
-    fetchLatestScanned();
-  }, [fetchLatestScanned]);
-
-  useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.replace("/login");
@@ -366,63 +343,6 @@ export default function ScanHistory() {
             </button>
           </Link>
         </div>
-      </div>
-      <label className="">Data Scan Terakhir:</label>
-      <div className=" rounded-xl gap-y-5 grid p-4 shadow-md">
-        {userData && (
-          <>
-            <div className=" gap-x-2 flex">
-              <span className="w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
-                {
-                  areaOptions.find(
-                    (area) => area.id == latestScanned.userData.areaId
-                  )?.name
-                }
-              </span>
-              <span className="w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
-                {
-                  reguOptions.find(
-                    (regu) => regu.id == latestScanned.userData.reguId
-                  )?.name
-                }
-              </span>
-            </div>
-            <span className="mr-auto text-xl font-medium">
-              {latestScanned.userData.displayName}
-            </span>
-            <span className="text-xl">{latestScanned.scanned}</span>
-            <div className="flex  flex-col gap-y-3 justify-between">
-              <span className="w-fit px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
-                {new Date(latestScanned.timestamp * 1000).toLocaleDateString(
-                  "id-ID",
-                  {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  }
-                )}{" "}
-                WIB
-              </span>
-              <span className="w-fit gap-x-1 flex px-3 py-1 text-sm text-blue-500 bg-blue-100 rounded-full">
-                <span className="">
-                  {latestScanned.coordinates?.latitude
-                    ? latestScanned.coordinates?.latitude
-                    : "NaN"}
-                </span>
-                ,
-                <span className="">
-                  {latestScanned.coordinates?.longitude
-                    ? latestScanned.coordinates?.longitude
-                    : "NaN"}
-                </span>
-              </span>
-            </div>
-          </>
-        )}
       </div>
       <div className="gap-y-5 flex flex-col">
         <div className="gap-y-1 grid">
